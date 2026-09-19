@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cx.charlie.flat</id>
+  <name>Flat</name>
+  <developer id="uk.co.lightmorph">
+    <name>Lightmorphic</name>
+  </developer>
+  <summary>Your Flatpak apps and their settings, onto any machine</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <description>
+    <p>
+      Flat backs up the settings, data and permissions of the Flatpak
+      apps you choose into a single portable file, and puts them back on a
+      different machine or a different distribution. It was written to move a
+      desktop from one distribution to another without losing browser
+      profiles, logins, extensions and app settings.
+    </p>
+    <p>
+      It is selective on purpose. Browsers, mail clients, chat apps, notes,
+      password managers and media tools with project files arrive already
+      ticked; converters, calculators and viewers do not, because nothing in
+      them is worth carrying. Caches are left out unless you ask for them.
+    </p>
+    <p>Restoring does the steps in the order that actually works:</p>
+    <ul>
+      <li>Adds the remote the app came from, if it is missing</li>
+      <li>Installs the app first, before any data is written</li>
+      <li>Closes the app if it is running</li>
+      <li>Clears the empty directory the install just created</li>
+      <li>Unpacks your data, checked against its stored checksum</li>
+      <li>Sets ownership to you, so a different user ID is not a problem</li>
+      <li>Restores the app's permission overrides</li>
+    </ul>
+    <p>
+      Everything restores to user scope, so no password is needed and the
+      result behaves the same on any distribution. Nothing needs a terminal.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">flat.desktop</launchable>
+  <categories>
+    <category>System</category>
+    <category>Utility</category>
+    <category>Archiving</category>
+  </categories>
+
+  <url type="homepage">https://flat.lightmorphic.com</url>
+  <url type="bugtracker">https://github.com/lightmorphic/flat/issues</url>
+  <url type="vcs-browser">https://github.com/lightmorphic/flat</url>
+
+  <provides>
+    <binary>flat</binary>
+  </provides>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="1.5.1" date="2026-09-19">
+      <description>
+        <p>Updates now come from Flat's GitHub releases. The version number
+        links to flat.lightmorphic.com.</p>
+      </description>
+    </release>
+    <release version="1.5.0" date="2026-09-19">
+      <description>
+        <p>Two tabs. All apps lists everything on the machine, and All ticks every
+        one, for sending to My apps. My apps is where each app is marked Fresh or
+        Keep settings, where the backup is made, and where it refuses to start
+        while a Keep settings app is open. A quiet tick replaces the coloured
+        labels.</p>
+      </description>
+    </release>
+    <release version="1.4.3" date="2026-09-18">
+      <description>
+        <p>The update dot is on screen from the moment Flat opens, pulsing while
+        it checks, and the version number links to flat.lightmorphic.com. A
+        backup file's contents are checked before any of it is used.</p>
+      </description>
+    </release>
+    <release version="1.4.2" date="2026-09-18">
+      <description>
+        <p>The update dot now follows the house spec: version number only, a
+        16px dot at the top right, a slow one-per-second pulse while it checks
+        and while it restarts, and a white progress ring while downloading.</p>
+      </description>
+    </release>
+    <release version="1.4.1" date="2026-09-18">
+      <description>
+        <p>The warning about open apps now looks again: a Refresh button, and a
+        fresh look whenever the window comes back into focus and every few
+        seconds while the warning is showing.</p>
+      </description>
+    </release>
+    <release version="1.4.0" date="2026-09-18">
+      <description>
+        <p>Renamed from Flatmorphic to Flat. Each app on your list is marked Fresh
+        or Keep settings. On a new machine one Install press puts every app on,
+        and brings back the settings of the Keep settings ones from a backup file.</p>
+      </description>
+    </release>
+    <release version="1.3.1" date="2026-09-17">
+      <description>
+        <p>The icon is now the two brand colours only, with no tinted fill.</p>
+      </description>
+    </release>
+    <release version="1.3.0" date="2026-09-17">
+      <description>
+        <p>A system tray icon with a menu to each tab and a running job's progress
+        in its tooltip. Closing the window during a job now hides it to the tray
+        rather than ending the job. New icon: brand yellow with dark artwork.</p>
+      </description>
+    </release>
+    <release version="1.2.0" date="2026-09-17">
+      <description>
+        <p>The ticked apps on the Back up and Restore tabs can be pushed straight
+        onto the standing list. Rows removed on purpose are remembered so a batch
+        add does not put them back. Messages now appear in the panel rather than
+        floating over the buttons.</p>
+      </description>
+    </release>
+    <release version="1.1.2" date="2026-09-17">
+      <description>
+        <p>Installing now shows a row for every app on the list. Apps already
+        present are named and passed over rather than left out, and a failure no
+        longer ends the run.</p>
+      </description>
+    </release>
+    <release version="1.1.1" date="2026-09-17">
+      <description>
+        <p>A remote added at user scope no longer takes a name already in use
+        system-wide, so hand-typed flatpak commands keep working unchanged.</p>
+      </description>
+    </release>
+    <release version="1.1.0" date="2026-09-17">
+      <description>
+        <p>A standing list of the apps you always want, editable in the app and
+        carried between machines as a small file. On a fresh install, one button
+        puts them all on.</p>
+      </description>
+    </release>
+    <release version="1.0.0" date="2026-09-16">
+      <description>
+        <p>First release. Backing up and restoring selected Flatpak apps, with
+        smart defaults, running-app detection, per-app checksums and permission
+        overrides.</p>
+      </description>
+    </release>
+  </releases>
+</component>

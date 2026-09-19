@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-accent="brand">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:;">
+<title>Flat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true">
+        <!-- The app icon itself, the same drawing as build/icons: brand yellow
+             ground, brand navy mark, two colours and nothing else. -->
+        <rect x="10" y="10" width="492" height="492" rx="120" class="brand-ground"/>
+        <rect x="130" y="279" width="251" height="125" rx="28" class="brand-line"/>
+        <path d="M256 105V264m0 0-55-55M256 264l55-55" class="brand-line"/>
+      </svg>
+      <h1>Flat</h1>
+    </div>
+
+    <nav class="tabs" role="tablist" aria-label="What to do">
+      <button type="button" class="tab is-on" id="tab-all" role="tab" aria-selected="true">All apps</button>
+      <button type="button" class="tab" id="tab-mine" role="tab" aria-selected="false">My apps</button>
+    </nav>
+
+    <div class="header-tools">
+      <div class="update-widget" id="update-widget">
+        <!-- Version only, never the app name. It links to the app's website. -->
+        <a class="update-widget-version" id="update-widget-version"
+           href="https://flat.lightmorphic.com" target="_blank" rel="noopener noreferrer"></a>
+        <button type="button" class="update-dot" id="update-dot">
+          <svg class="update-dot-ring" viewBox="0 0 16 16" aria-hidden="true">
+            <circle class="update-dot-ring-track" cx="8" cy="8" r="7"/>
+            <circle class="update-dot-ring-fill" id="update-dot-ring-fill" cx="8" cy="8" r="7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Shown instead of everything else when flatpak is not on the machine. -->
+  <main class="panel blocker" id="blocker" hidden>
+    <h2 class="panel-head">Flatpak is not installed here</h2>
+    <p class="blocker-body" id="blocker-body"></p>
+    <p class="hint">Install it with your distribution's package manager, then reopen Flat.</p>
+  </main>
+
+  <!-- ===================== ALL APPS ===================== -->
+  <main class="panel view" id="view-all">
+
+    <div class="panel-head-row">
+      <details class="eye eye--head">
+        <summary>
+          <h2 class="panel-head">Everything on this machine</h2>
+          <span class="eye-btn" aria-label="About this screen">i</span>
+        </summary>
+      </details>
+      <div class="head-tools">
+        <input type="search" id="filter-all" class="filter" placeholder="Filter by name" aria-label="Filter the list by name">
+      </div>
+    </div>
+
+    <div class="eye-body" id="eye-all-body" hidden>
+      <p>Every Flatpak app installed on this machine, with the size of the settings and data each one keeps. Tick the ones you want and press <strong>Add to My apps</strong>. They arrive there as Fresh installs; on My apps you choose which of them keep their settings.</p>
+      <p>Apps already on My apps say so, and adding them again changes nothing.</p>
+    </div>
+
+    <div class="list-scroll">
+      <p class="empty" id="all-empty" hidden>No Flatpak apps found on this machine.</p>
+      <ul class="applist" id="all-list"></ul>
+      <p class="loading" id="all-loading">Looking at what is installed…</p>
+    </div>
+
+    <div class="footbar">
+      <div class="tally">
+        <span class="tally-main" id="all-tally">Nothing ticked</span>
+        <span class="hint" id="all-hint"></span>
+      </div>
+      <div class="foot-actions">
+        <button type="button" class="btn btn--quiet" id="all-select-all">All</button>
+        <button type="button" class="btn btn--quiet" id="all-select-none">None</button>
+        <button type="button" class="btn btn--primary" id="all-to-mine" disabled>Add to My apps</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== MY APPS ===================== -->
+  <main class="panel view" id="view-mine" hidden>
+
+    <div class="panel-head-row">
+      <details class="eye eye--head">
+        <summary>
+          <h2 class="panel-head">The apps I always want</h2>
+          <span class="eye-btn" aria-label="About this screen">i</span>
+        </summary>
+      </details>
+      <div class="head-tools">
+        <button type="button" class="btn btn--quiet" id="mine-forget" hidden>Forget removals</button>
+        <button type="button" class="btn btn--quiet" id="mine-from-installed">Add everything here</button>
+        <button type="button" class="btn btn--quiet" id="mine-import">Open a list…</button>
+        <button type="button" class="btn btn--quiet" id="mine-export">Save the list…</button>
+      </div>
+    </div>
+
+    <div class="eye-body" id="eye-mine-body" hidden>
+      <p>This is your own list, kept separately from any backup. On a machine with nothing on it, open Flat, come to this tab and press Install — every app on the list goes on in one go. Apps already here are skipped.</p>
+      <p>Each app is <strong>Fresh</strong> or <strong>Keep settings</strong>. Fresh apps install clean. Keep settings apps install and then get their settings back from a backup — the one named just above the list, which Flat finds on its own if it sits beside the AppImage or in Downloads. Only apps this Install actually puts on get their settings back: an app already on the machine is never touched. Tick several and use the buttons above the list to mark or remove them together.</p>
+      <p>You only need an app's <strong>ID</strong>, the reverse-web-address name like <code>org.mozilla.firefox</code>. There is no separate Flathub location to find: the search box below turns a name into the right ID for you. The remote is <code>flathub</code> unless you say otherwise.</p>
+      <p>On the machine you are leaving, press <strong>Back up settings…</strong>. It packs every Keep settings app that is on this machine into one file; Fresh apps need no backup. Every one of them has to be closed first, and Flat says which are still open.</p>
+      <p>Removing a row with its × is remembered. Pressing <strong>Add everything here</strong> leaves those out, so something you have taken off does not walk back on. Adding it by name from the search box puts it back for good, and <strong>Forget removals</strong> clears the lot.</p>
+      <p>Changes save themselves as you type. To carry the list to a new machine, press <strong>Save the list…</strong> and keep the small <code id="mine-portable-name">flat-apps.json</code> file next to the AppImage — Flat finds it on its own the first time it runs there. No backup file is needed for this; it installs the apps, not their settings.</p>
+    </div>
+
+    <!-- Before a backup can be made. A live app's profile copies as a locked
+         or half-written one, and it opens empty on the other machine. -->
+    <div class="alert alert--warning" id="running-warning" hidden>
+      <span class="alert-mark" aria-hidden="true">!</span>
+      <div class="alert-body">
+        <p id="running-warning-text"></p>
+        <p class="hint">A profile copied while its app is open comes out locked or half-written.</p>
+      </div>
+      <div class="alert-actions">
+        <button type="button" class="btn btn--quiet" id="recheck-running">Check again</button>
+        <button type="button" class="btn btn--quiet" id="close-running">Close them for me</button>
+      </div>
+    </div>
+
+    <div class="alert alert--warning" id="flathub-warning" hidden>
+      <span class="alert-mark" aria-hidden="true">!</span>
+      <div class="alert-body">
+        <p>Flathub is not set up on this machine yet.</p>
+        <p class="hint">Almost every app comes from it. Nothing can be searched for or installed until it is added.</p>
+      </div>
+      <button type="button" class="btn btn--quiet" id="add-flathub">Add Flathub</button>
+    </div>
+
+    <div class="finder">
+      <input type="search" id="mine-search" class="filter filter--wide"
+             placeholder="Find an app by name, or paste an ID" aria-label="Search for an app to add to the list">
+      <button type="button" class="btn btn--quiet" id="mine-add-blank">Add a blank row</button>
+    </div>
+    <ul class="results" id="mine-results" hidden></ul>
+
+    <!-- Where the Keep settings apps get their settings from. It stays on the
+         page rather than behind the i: it says what Install is about to do. -->
+    <div class="source" id="mine-source">
+      <span class="source-text" id="mine-source-text">Looking for a backup…</span>
+      <button type="button" class="btn btn--quiet" id="mine-source-choose">Choose a backup…</button>
+    </div>
+
+    <div class="list-scroll">
+      <div class="colhead" id="mine-colhead">
+        <label class="colhead-all">
+          <input type="checkbox" id="mine-all" aria-label="Tick every app on the list">
+          <span id="mine-all-label">All</span>
+        </label>
+        <span class="colhead-here" aria-hidden="true"></span>
+        <span class="colhead-name">Name</span>
+        <span class="colhead-id">App ID</span>
+        <span class="colhead-remote">Remote</span>
+        <span class="colhead-keep">Keep settings</span>
+        <span class="colhead-tail"></span>
+      </div>
+      <div class="bulk" id="mine-bulk" hidden>
+        <span class="bulk-count" id="mine-bulk-count"></span>
+        <button type="button" class="btn btn--quiet" id="mine-bulk-keep">Keep settings</button>
+        <button type="button" class="btn btn--quiet" id="mine-bulk-fresh">Fresh</button>
+        <button type="button" class="btn btn--quiet" id="mine-bulk-remove">Remove</button>
+      </div>
+      <p class="empty" id="mine-empty" hidden>Your list is empty. Search above, or press <strong>Add everything here</strong> to start from what this machine already has.</p>
+      <ul class="applist applist--edit" id="mine-list"></ul>
+    </div>
+
+    <div class="footbar">
+      <div class="tally">
+        <span class="tally-main" id="mine-tally">Nothing on the list</span>
+        <span class="hint" id="mine-hint"></span>
+      </div>
+      <div class="foot-actions">
+        <label class="switch switch--small" title="Caches are large and rebuild themselves">
+          <input type="checkbox" id="include-cache">
+          <span class="track"></span>
+          <span>Include caches</span>
+        </label>
+        <button type="button" class="btn btn--quiet" id="mine-backup">Back up settings…</button>
+        <button type="button" class="btn btn--primary" id="mine-install" disabled>Install</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== RUNNING / RESULTS ===================== -->
+  <main class="panel view" id="view-job" hidden>
+    <div class="panel-head-row">
+      <h2 class="panel-head" id="job-head">Working</h2>
+      <span class="job-count" id="job-count"></span>
+    </div>
+
+    <div class="progress" id="job-progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="job-progress-fill"></div></div>
+      <p class="progress-line" id="job-line">Starting…</p>
+    </div>
+
+    <div class="list-scroll">
+      <ul class="joblist" id="job-list"></ul>
+    </div>
+
+    <div class="footbar" id="job-footbar" hidden>
+      <div class="tally">
+        <span class="tally-main" id="job-summary"></span>
+        <span class="hint" id="job-summary-hint"></span>
+      </div>
+      <div class="foot-actions">
+        <button type="button" class="btn btn--quiet" id="job-reveal" hidden>Show me the file</button>
+        <button type="button" class="btn btn--primary" id="job-done">Done</button>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

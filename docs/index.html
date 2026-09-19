@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lightmorphic Flat: your Flatpak apps and their settings, onto any Linux machine</title>
+<meta name="description" content="Keep a list of the Flatpak apps you always want. On a fresh install, press one button: every app goes on, and the ones you chose come back with their settings.">
+<link rel="canonical" href="https://flat.lightmorphic.com/">
+<link rel="icon" href="images/flat.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="images/flat-512.png">
+<link rel="preload" href="fonts/Manrope-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#111827">
+<meta property="og:title" content="Lightmorphic Flat: your Flatpak apps and their settings, onto any Linux machine">
+<meta property="og:description" content="Keep a list of the Flatpak apps you always want. On a fresh install, press one button: every app goes on, and the ones you chose come back with their settings.">
+<meta property="og:url" content="https://flat.lightmorphic.com/">
+<meta property="og:image" content="https://flat.lightmorphic.com/images/flat-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Lightmorphic Flat: your Flatpak apps and their settings, onto any Linux machine">
+<meta name="twitter:description" content="Keep a list of the Flatpak apps you always want. On a fresh install, press one button: every app goes on, and the ones you chose come back with their settings.">
+<meta name="twitter:image" content="https://flat.lightmorphic.com/images/flat-512.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://lightmorphic.com/#organization",
+      "name": "Lightmorphic",
+      "url": "https://lightmorphic.com",
+      "description": "A UK studio building fast, privacy-first websites and free open-source tools.",
+      "sameAs": [
+        "https://github.com/lightmorphic",
+        "https://find-and-update.company-information.service.gov.uk/company/17423646"
+      ],
+      "legalName": "Lightmorphic Ltd",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "GB"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://flat.lightmorphic.com/#website",
+      "url": "https://flat.lightmorphic.com/",
+      "name": "Lightmorphic Flat",
+      "inLanguage": "en-GB",
+      "publisher": {
+        "@id": "https://lightmorphic.com/#organization"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://flat.lightmorphic.com/#app",
+      "name": "Lightmorphic Flat",
+      "operatingSystem": "Linux (x86_64) with Flatpak",
+      "applicationCategory": "UtilitiesApplication",
+      "description": "Keeps a list of the Flatpak apps you always want and installs them all on a fresh Linux machine with one button, bringing back the settings of the ones you mark Keep settings from a backup. Backs up selected apps' data and permissions into one portable file.",
+      "url": "https://flat.lightmorphic.com/",
+      "downloadUrl": "https://github.com/lightmorphic/flat/releases/latest",
+      "softwareVersion": "1.5.1",
+      "dateModified": "2026-09-19",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "GBP"
+      },
+      "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+      "author": {
+        "@id": "https://lightmorphic.com/#organization"
+      },
+      "publisher": {
+        "@id": "https://lightmorphic.com/#organization"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://flat.lightmorphic.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Do I have to know where an app lives on Flathub?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. You only need its name. The search box on the My apps tab turns a name into the app's ID, the reverse-web-address name such as org.mozilla.firefox, and that is all Flat needs. The remote is Flathub unless you say otherwise."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will my browser logins come back?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Often, not always. Firefox and Thunderbird keep their logins inside their own profile folder, so those generally come back with everything else. Apps that keep their login in the system keyring, GNOME Keyring or KWallet, keep it outside Flatpak altogether, and those need signing in again on the new machine."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is in a backup file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Everything in each ticked app's own folder under ~/.var/app, apart from its cache unless you switch caches on, plus the app's permission settings. For a browser that means bookmarks, history, saved passwords and cookies. The file is not encrypted, so keep it somewhere as safe as the machine it came from."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens to an app that is already on the new machine?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Install button leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Install has just put on, so nothing already set up on a machine is overwritten."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it need a password?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Everything Flat installs goes in for your own user, not system-wide, which needs no administrator password and works the same way on every distribution."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What about apps that are not Flatpaks?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "They are outside what Flat does. Native .deb and .rpm packages, Snaps and AppImages are not moved or installed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I update Flat?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The small dot beside the version number, top right. Green means up to date and a click checks again. Amber means a newer version is ready: click to download it, watch the white ring fill, and click the blue dot to restart into it. Red means GitHub could not be reached. Flat looks when it starts and every half hour after, but nothing is downloaded until you click."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="topnav">
+  <div class="wrap topnav-inner">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 512 512" width="22" height="22" aria-hidden="true"><rect x="10" y="10" width="492" height="492" rx="120" fill="#fbc711"/><rect x="130" y="279" width="251" height="125" rx="28" fill="none" stroke="#111827" stroke-width="30"/><path d="M256 105V264m0 0-55-55M256 264l55-55" fill="none" stroke="#111827" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Lightmorphic Flat
+    </a>
+    <div class="nav-links">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#keep">Fresh or keep</a>
+      <a class="hide-sm" href="#limits">Limits</a>
+      <a class="hide-sm" href="#faq">Questions</a>
+      <a href="#download">Download</a>
+      <div id="all-apps"></div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>A fresh install,<br>and everything back on&nbsp;it.</h1>
+      <p class="lede">Flat keeps a list of the Flatpak apps you always want. On a new machine, open it and press Install: every app goes on, and the ones you have marked <strong>Keep settings</strong> come back with their profiles, bookmarks and preferences. Changing distribution stops meaning an afternoon of setting things up again.</p>
+      <div class="hero-cta">
+        <a class="btn primary" href="#download">Download</a>
+        <a class="btn ghost" href="#how">How it works</a>
+      </div>
+      <p class="hero-note">Free &amp; open source · GPL-3.0 · No account, no telemetry</p>
+    </div>
+
+    <aside class="routine" aria-label="A fresh install with Flat">
+      <p class="routine-title">On the new machine</p>
+      <ol>
+        <li><span><b>Download two files into one folder</b>Flat, and the backup you made on the old machine.</span></li>
+        <li><span><b>Open Flat</b>It finds the backup and your app list on its own.</span></li>
+        <li><span><b>Press Install</b>Every app goes on, and the Keep settings ones get their settings back.</span></li>
+      </ol>
+      <p class="routine-note">No terminal, and no password: everything goes in for your own user.</p>
+    </aside>
+  </div>
+</header>
+
+<main id="main">
+
+<section id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <h2 id="how-title">Pick your apps. Back up. Install.</h2>
+    <p class="section-intro">Flat has two tabs: All apps, which is everything on this machine, and My apps, the list you carry to the next one.</p>
+    <div class="steps">
+      <article class="panel">
+        <span class="step-num" aria-hidden="true">1</span>
+        <h3>Pick your apps</h3>
+        <p>All apps lists every Flatpak app on the machine you are leaving, with how much each one keeps. Tick them, or press All, and send them to My apps. There you switch on Keep settings for the ones whose settings matter; the rest install fresh.</p>
+      </article>
+      <article class="panel">
+        <span class="step-num" aria-hidden="true">2</span>
+        <h3>Back up</h3>
+        <p>Back up settings packs every Keep settings app into one <code>.fmpack</code> file, saved wherever you choose. It will not start while any of them is open, and it says which. Each app inside is checksummed, so a damaged copy is caught instead of restored.</p>
+      </article>
+      <article class="panel">
+        <span class="step-num" aria-hidden="true">3</span>
+        <h3>Install</h3>
+        <p>On the new machine, the My apps tab installs everything on your list in one go, then brings back the settings of the apps you marked to keep. Anything that goes wrong is named on its own row, and the run carries on to the next app.</p>
+      </article>
+    </div>
+    <div class="shots">
+      <figure class="shot">
+        <img src="images/screenshot-all-apps.jpg" width="1600" height="971" loading="lazy"
+             alt="The All apps tab: every Flatpak app on the machine with a tick box and the size of the data it keeps, all of them ticked, ready to add to My apps.">
+        <figcaption>All apps: everything on this machine. Tick it and send it to My apps.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="images/screenshot-install-run.jpg" width="1600" height="971" loading="lazy"
+             alt="An install run: seven apps each with a green tick, three noting their settings were brought back from the backup, one noting it was already on the machine.">
+        <figcaption>Install: every app accounted for, including the ones already there.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="keep" aria-labelledby="keep-title">
+  <div class="wrap">
+    <h2 id="keep-title">Fresh, or keep the settings</h2>
+    <p class="section-intro">Some apps you want as new. Others you want exactly as you left them. Each app on your list gets a switch, and one tick at the top marks them all at once.</p>
+    <figure class="shot">
+      <img src="images/screenshot-my-apps.jpg" width="1600" height="971" loading="lazy"
+           alt="The My apps tab: a list of 67 Flatpak apps with name, app ID, remote, a Keep settings switch and whether each is already installed, above a line naming the backup the settings will come from.">
+      <figcaption>My apps: the list you carry from machine to machine, with the backup its settings will come from named above it.</figcaption>
+    </figure>
+    <div class="bento" style="margin-top:1.5rem">
+      <article class="panel">
+        <h3>
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          Build the list without typing it
+        </h3>
+        <p>Tick everything on All apps and send it across in one go, or press Add everything here. Or search by name and add apps you do not have yet. Delete one you never want again, and a later "add everything" leaves it out.</p>
+      </article>
+      <article class="panel">
+        <h3>
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+          Never overwrites what is there
+        </h3>
+        <p>Settings are brought back only for apps the Install button has just put on. An app already on the machine is left exactly as it is, however the switch is set.</p>
+      </article>
+      <article class="panel">
+        <h3>
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+          Gets the order right
+        </h3>
+        <p>An app restored by hand often opens as if brand new: its folder was copied before it was installed, or while it was running, or with the wrong owner. Flat installs first, closes the app, clears the empty folder the install made, unpacks your data, sets the owner to you, and restores its permissions, in that order.</p>
+      </article>
+      <article class="panel">
+        <h3>
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+          One file, no installer
+        </h3>
+        <p>A single AppImage that runs before anything else is set up on a new machine. It sits in the tray while it works, so a long install can carry on with the window closed, and it keeps itself up to date through one small dot.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="limits" class="limits" aria-labelledby="limits-title">
+  <div class="wrap">
+    <h2 id="limits-title">What it cannot do</h2>
+    <div class="panel">
+      <ul>
+        <li><strong>Logins kept in the system keyring do not travel.</strong> GNOME Keyring and KWallet sit outside Flatpak, so those apps need signing in again. Firefox and Thunderbird keep theirs in their own profile and generally come back signed in.</li>
+        <li><strong>It is for Flatpak apps only.</strong> Native packages, Snaps and AppImages are not moved.</li>
+        <li><strong>A much older distribution may not carry the same version.</strong> Flat then installs the current one and says so on that app's row.</li>
+        <li><strong>Everything installs for your own user.</strong> Apps that were system-wide on the old machine come back per-user on the new one, which needs no password and behaves the same everywhere.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="requirements" class="req" aria-labelledby="requirements-title">
+  <div class="wrap">
+    <h2 id="requirements-title">Requirements</h2>
+    <div class="panel">
+      <p><strong>A 64-bit (x86_64) Linux desktop with Flatpak installed.</strong> Any distribution will do: Flat drives the <code>flatpak</code> command rather than linking against it, and says so plainly if it is missing. If Flathub is not set up yet, Flat offers to add it.</p>
+      <p>To check Flatpak is there:</p>
+      <pre><code>flatpak --version</code></pre>
+    </div>
+  </div>
+</section>
+
+<section id="faq" aria-labelledby="faq-title">
+  <div class="wrap">
+    <h2 id="faq-title">Questions</h2>
+    <div class="panel faq">
+      <details class="faq-item">
+        <summary><h3>Do I have to know where an app lives on Flathub?</h3></summary>
+        <p>No. You only need its name. The search box on the My apps tab turns a name into the app's ID, the reverse-web-address name such as <code>org.mozilla.firefox</code>, and that is all Flat needs. The remote is Flathub unless you say otherwise.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>Will my browser logins come back?</h3></summary>
+        <p>Often, not always. Firefox and Thunderbird keep their logins inside their own profile folder, so those generally come back with everything else. Apps that keep their login in the system keyring, GNOME Keyring or KWallet, keep it outside Flatpak altogether, and those need signing in again on the new machine.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>What is in a backup file?</h3></summary>
+        <p>Everything in each ticked app's own folder under <code>~/.var/app</code>, apart from its cache unless you switch caches on, plus the app's permission settings. For a browser that means bookmarks, history, saved passwords and cookies. The file is not encrypted, so keep it somewhere as safe as the machine it came from.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>What happens to an app that is already on the new machine?</h3></summary>
+        <p>The Install button leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Install has just put on, so nothing already set up on a machine is overwritten.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>Does it need a password?</h3></summary>
+        <p>No. Everything Flat installs goes in for your own user, not system-wide, which needs no administrator password and works the same way on every distribution.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>What about apps that are not Flatpaks?</h3></summary>
+        <p>They are outside what Flat does. Native <code>.deb</code> and <code>.rpm</code> packages, Snaps and AppImages are not moved or installed.</p>
+      </details>
+      <details class="faq-item">
+        <summary><h3>How do I update Flat?</h3></summary>
+        <p>The small dot beside the version number, top right. Green means up to date and a click checks again. Amber means a newer version is ready: click to download it, watch the white ring fill, and click the blue dot to restart into it. Red means GitHub could not be reached. Flat looks when it starts and every half hour after, but nothing is downloaded until you click.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="download" class="download" aria-labelledby="download-title">
+  <div class="wrap">
+    <h2 id="download-title">Download</h2>
+    <div class="panel">
+      <div class="dl-row">
+        <a class="btn primary" href="https://github.com/lightmorphic/flat/releases/latest">Download the AppImage</a>
+        <span class="dl-meta">x86_64 · about 121&nbsp;MB · GPL-3.0-or-later</span>
+      </div>
+      <p class="dl-help">Mark the file executable (right-click → Properties → “Allow executing” on most desktops), then open it. On a new machine, put your backup file and your saved app list in the same folder as Flat and it finds them both on its own.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+
+    <div class="foot-brand">
+      <a class="foot-lockup" href="#top">
+        <svg viewBox="0 0 512 512" width="26" height="26" aria-hidden="true"><rect x="10" y="10" width="492" height="492" rx="120" fill="#fbc711"/><rect x="130" y="279" width="251" height="125" rx="28" fill="none" stroke="#111827" stroke-width="30"/><path d="M256 105V264m0 0-55-55M256 264l55-55" fill="none" stroke="#111827" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Lightmorphic Flat
+      </a>
+      <p class="foot-tagline">Your Flatpak apps and their settings, onto any Linux machine. Keep a list of the apps you always want, back up the ones whose settings matter, and put the lot on a fresh install with one button.</p>
+    </div>
+
+    <nav class="foot-nav" aria-label="Footer">
+      <p class="foot-nav-title">Pages</p>
+      <div class="foot-nav-links">
+        <a href="#how">How it works</a>
+        <a href="#keep">Fresh or keep</a>
+        <a href="#limits">Limits</a>
+        <a href="#faq">Questions</a>
+        <a href="#download">Download</a>
+        <a href="https://lightmorphic.com">Lightmorphic</a>
+      </div>
+    </nav>
+
+  </div>
+</footer>
+
+<div class="gh-foot">
+  <div class="wrap gh-inner">
+    <div class="gh-marks">
+      <a href="https://github.com/lightmorphic/flat" aria-label="Lightmorphic Flat on GitHub">
+        <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+        </svg>
+      </a>
+      <a href="https://opensource.org/license/gpl-3-0" aria-label="GPL-3.0, an Open Source Initiative approved licence">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="9.2" r="6.4"/>
+          <path d="M9.6 14.4 7.9 21.5" stroke-linecap="round"/>
+          <path d="M14.4 14.4 16.1 21.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+    <nav class="gh-links" aria-label="Source code">
+      <a href="https://github.com/lightmorphic/flat">Repository</a>
+      <a href="https://github.com/lightmorphic/flat#readme">Documentation</a>
+      <a href="https://github.com/lightmorphic/flat/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/lightmorphic/flat/blob/main/LICENSE">Licence</a>
+      <a href="https://github.com/lightmorphic/flat/commits/main">Changelog</a>
+      <a href="https://github.com/lightmorphic/flat/issues">Issues</a>
+      <a href="https://github.com/lightmorphic/flat/releases">Releases</a>
+    </nav>
+  </div>
+</div>
+
+<div class="legal">
+  <div class="wrap legal-inner">
+    <p class="legal-text">
+      &copy; Lightmorphic Ltd. Registered in England and Wales, company number 17423646.<br>
+      Registered office: 82A James Carter Road, Mildenhall, IP28 7DE.<br>
+      Page last updated: 19 September 2026.
+    </p>
+    <nav class="legal-links" aria-label="Legal">
+      <a href="privacy.html">Privacy</a>
+      <a href="cookies.html">Cookies</a>
+      <a href="terms.html">Terms</a>
+      <a href="accessibility.html">Accessibility</a>
+      <a href="complaints.html">Complaints</a>
+    </nav>
+  </div>
+</div>
+<script src="https://apps.lightmorphic.com/launcher.js" defer></script>
+</body>
+</html>

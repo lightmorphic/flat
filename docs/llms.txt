@@ -1,0 +1,24 @@
+# Lightmorphic Flat
+
+> Keeps a list of the Flatpak apps you always want, and puts them all on a fresh Linux install with one button, bringing back the settings of the ones you mark "Keep settings" from a backup. Also backs up selected Flatpak apps' data and permissions into one portable file, and restores them onto another machine or another distribution.
+
+Flat is free and open source (GPL-3.0-or-later), distributed as a single Linux AppImage for x86_64. It drives the `flatpak` command rather than linking against libflatpak, so it runs on any distribution with Flatpak installed, and it installs everything at user scope, so no administrator password is needed.
+
+A backup (`.fmpack`) is a plain tar holding a manifest and one zstd-compressed archive per app, each checksummed with SHA-256. A restore runs in a fixed order — add the remote, install the app, close it, clear the directory the install created, unpack the data, set ownership to the current user, restore permission overrides — because getting that order wrong is what makes a restored app open as if brand new. The Install button on the My apps tab restores settings only for apps it has just installed, and never overwrites an app already on the machine.
+
+Made by Lightmorphic (https://lightmorphic.com), a UK studio building fast, privacy-first websites and free open-source tools.
+
+## Pages
+
+- [Lightmorphic Flat](https://flat.lightmorphic.com/): what it does, how it works, its limits, questions, and download
+- [Privacy](https://flat.lightmorphic.com/privacy.html), [Cookies](https://flat.lightmorphic.com/cookies.html), [Terms](https://flat.lightmorphic.com/terms.html), [Accessibility](https://flat.lightmorphic.com/accessibility.html), [Complaints](https://flat.lightmorphic.com/complaints.html): the legal pages. Lightmorphic Ltd, company number 17423646.
+- [Source and releases](https://github.com/lightmorphic/flat): full source code, issue tracker, and every release
+
+## Key facts
+
+- Platform: Linux desktop, x86_64, with Flatpak
+- Distribution: single AppImage, no installer
+- Scope: Flatpak apps only; native packages, Snaps and AppImages are out of scope
+- Logins kept in GNOME Keyring or KWallet do not travel; Firefox and Thunderbird profiles generally do
+- Network: Flat checks for a newer version of itself; app searches and installs are Flatpak talking to Flathub or the chosen remote
+- Licence: GPL-3.0-or-later

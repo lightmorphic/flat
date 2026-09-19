@@ -1,0 +1,78 @@
+{
+  "name": "flat",
+  "productName": "Flat",
+  "version": "1.5.1",
+  "description": "Lightmorphic Flat: back up the settings, data and permissions of selected Flatpak apps, keep a standing list of the apps you always want, and put them all on a new machine with one button.",
+  "main": "src/main/main.js",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "author": {
+    "name": "Lightmorphic"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/run-tests.js",
+    "dist": "electron-builder --linux AppImage"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "cx.charlie.flat",
+    "productName": "Flat",
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
+    "files": [
+      "src/**/*",
+      "build/icons/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "extraFiles": [
+      {
+        "from": "build/cx.charlie.flat.metainfo.xml",
+        "to": "usr/share/metainfo/cx.charlie.flat.metainfo.xml"
+      },
+      {
+        "from": "build/cx.charlie.flat.xml",
+        "to": "usr/share/mime/packages/cx.charlie.flat.xml"
+      }
+    ],
+    "artifactName": "Flat-${version}-${arch}.${ext}",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "System",
+      "executableName": "flat",
+      "icon": "build/icons",
+      "synopsis": "Move Flatpak app settings and data between machines",
+      "maintainer": "Lightmorphic",
+      "desktop": {
+        "entry": {
+          "MimeType": "application/x-flat-backup"
+        }
+      },
+      "syncDesktopName": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "lightmorphic",
+      "repo": "flat",
+      "releaseType": "release"
+    }
+  },
+  "desktopName": "flat.desktop",
+  "homepage": "https://flat.lightmorphic.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lightmorphic/flat.git"
+  }
+}

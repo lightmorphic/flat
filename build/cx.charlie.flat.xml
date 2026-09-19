@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- So a .fmpack file has an icon and opens with Flat once the
+     AppImage has been integrated into the desktop. -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-flat-backup">
+    <comment>Flat backup</comment>
+    <icon name="flat"/>
+    <glob pattern="*.fmpack"/>
+  </mime-type>
+</mime-info>

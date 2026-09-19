@@ -1,0 +1,794 @@
+/* Flat. Plain CSS, one self-hosted font, no framework, nothing
+   fetched from anywhere. Dark only: this is a desktop tool that sits open
+   next to a terminal, and a light flash on launch is worse than no choice. */
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('fonts/Manrope-Variable.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  --bg: #09090b;
+  --fg: #fafafa;
+  --panel: #1b1d29;
+  --panel-border: rgba(255, 255, 255, .09);
+  --border: #27272a;
+  --muted: #1c1c1f;
+  --muted-fg: #a1a1aa;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, .35), 0 8px 24px -16px rgba(0, 0, 0, .6);
+
+  --accent: #fbc711;
+  --accent-hover: #ddaf0f;
+  --on-accent: #645007;
+  --accent-container: #4b3c05;
+  --on-accent-container: #fde694;
+
+  --brand-yellow: #fbc711;
+  --brand-navy: #111827;
+
+  --danger: #f34236;   --danger-bg: #350f0c;
+  --success: #4bae4f;  --success-bg: #102611;
+  --warning: #ffc006;  --warning-bg: #382a01;
+  --info: #2295f1;     --info-bg: #072135;
+
+  --update-green: #4bae4f;
+  --update-amber: #ffc006;
+  --update-blue: #2295f1;
+  --update-red: #f34236;
+
+  --radius: 0.875rem;
+  --panel-radius: 1.375rem;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  /* The window itself never scrolls. Long lists scroll inside their panel. */
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+code {
+  font-family: ui-monospace, 'Cascadia Mono', 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  background: var(--muted);
+  border-radius: 0.375rem;
+  padding: 0.05em 0.35em;
+}
+
+.hint { font-size: 0.8125rem; color: var(--muted-fg); margin: 0; }
+
+/* --------------------------------------------------------------------- */
+/* Shell                                                                   */
+/* --------------------------------------------------------------------- */
+
+.shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex: none;
+}
+
+.brand { display: flex; align-items: center; gap: 0.625rem; }
+.brand-mark { width: 30px; height: 30px; flex: none; }
+/* Identity, not accent: the mark keeps the brand pair whatever accent the
+   rest of the window is using. */
+.brand-ground { fill: var(--brand-yellow); }
+.brand-line {
+  fill: none;
+  stroke: var(--brand-navy);
+  stroke-width: 27;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.25rem;
+}
+.tab {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--muted-fg);
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius) - 0.25rem);
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+.tab:hover { color: var(--fg); }
+.tab.is-on { background: var(--accent); color: var(--on-accent); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.header-tools { margin-left: auto; display: flex; align-items: center; gap: 0.875rem; }
+
+/* --------------------------------------------------------------------- */
+/* Panels                                                                  */
+/* --------------------------------------------------------------------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--shadow-panel);
+  padding: 1.25rem 1.5rem 1.25rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.panel[hidden] { display: none; }
+
+.panel-head { margin: 0; font-size: 1.0625rem; font-weight: 600; }
+
+.panel-head-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: none;
+  flex-wrap: wrap;
+}
+.head-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.head-tools[hidden] { display: none; }
+
+.filter {
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--fg);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.75rem;
+  width: 14rem;
+  user-select: text;
+}
+.filter::placeholder { color: var(--muted-fg); }
+.filter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The i. The standing explanation of the screen lives behind it, shut by
+   default; anything needed before pressing something stays on the page. */
+.eye > summary { list-style: none; display: inline-flex; cursor: pointer; }
+.eye > summary::-webkit-details-marker { display: none; }
+.eye--head > summary {
+  display: flex; align-items: center; gap: 0.625rem;
+  border: 0; background: none; padding: 0;
+}
+.eye-btn {
+  width: 1.375rem; height: 1.375rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: 0.75rem; font-weight: 700; font-style: italic;
+  color: var(--muted-fg);
+  flex: none;
+}
+.eye--head > summary:hover > .eye-btn { color: var(--fg); border-color: var(--muted-fg); }
+.eye--head[open] > summary > .eye-btn {
+  background: var(--accent-container);
+  border-color: var(--accent-container);
+  color: var(--on-accent-container);
+}
+.eye--head > summary:focus-visible > .eye-btn { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.eye-body {
+  flex: none;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.875rem 1rem;
+  max-width: 78ch;
+  user-select: text;
+}
+.eye-body[hidden] { display: none; }
+.eye-body p { margin: 0 0 0.625rem; font-size: 0.875rem; color: var(--muted-fg); }
+.eye-body p:last-child { margin-bottom: 0; }
+.eye-body strong { color: var(--fg); font-weight: 600; }
+
+/* --------------------------------------------------------------------- */
+/* Alert                                                                   */
+/* --------------------------------------------------------------------- */
+
+/* Tinted background and a leading mark. Never a coloured left edge. */
+.alert {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.875rem;
+}
+.alert[hidden] { display: none; }
+.alert--warning { background: var(--warning-bg); border-color: rgba(255, 192, 6, .28); }
+.alert-mark {
+  flex: none;
+  width: 1.375rem; height: 1.375rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--warning);
+  color: var(--brand-navy);
+  font-weight: 800; font-size: 0.875rem;
+}
+.alert-body { min-width: 0; flex: 1 1 auto; }
+.alert-body p { margin: 0; font-size: 0.875rem; }
+.alert-body .hint { margin-top: 0.25rem; }
+.alert .btn { flex: none; align-self: center; }
+.alert-actions { flex: none; align-self: center; display: flex; gap: 0.5rem; }
+
+/* --------------------------------------------------------------------- */
+/* Buttons                                                                 */
+/* --------------------------------------------------------------------- */
+
+.btn {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--fg);
+  white-space: normal;
+}
+.btn:hover { border-color: var(--muted-fg); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.btn[disabled]:hover { border-color: var(--border); }
+
+.btn--quiet { font-size: 0.875rem; padding: 0.4rem 0.75rem; color: var(--muted-fg); }
+.btn--quiet:hover { color: var(--fg); }
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.btn--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* Armed: the first click asks, it does not act. Three seconds and it stands
+   back down on its own. No dialog, no toast — the button is the whole
+   conversation. See the morphic-button standard. */
+.btn.is-armed {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.btn.is-error {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* --------------------------------------------------------------------- */
+/* Switch and checkbox                                                     */
+/* --------------------------------------------------------------------- */
+
+.switch {
+  display: inline-flex; align-items: center; gap: 0.625rem;
+  cursor: pointer; min-height: 2.75rem;
+  font-size: 0.875rem;
+}
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch .track {
+  flex: none; width: 2.75rem; height: 1.5rem;
+  background: var(--border);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px; position: relative;
+  transition: background .15s ease;
+}
+.switch .track::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 1.125rem; height: 1.125rem; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+  transition: transform .15s ease;
+}
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(1.25rem); }
+.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .switch .track, .switch .track::after { transition: none; }
+}
+.switch--small { font-size: 0.8125rem; color: var(--muted-fg); gap: 0.5rem; }
+
+input[type="checkbox"] {
+  width: 1.125rem; height: 1.125rem; flex: none;
+  accent-color: var(--accent); cursor: pointer;
+}
+
+/* --------------------------------------------------------------------- */
+/* The app list                                                            */
+/* --------------------------------------------------------------------- */
+
+.list-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.list-scroll[hidden] { display: none; }
+
+/* The default Chromium scrollbar is a light grey slab that sits on the dark
+   list like a strip of tape. Thin and in the panel's own colours instead. */
+.list-scroll::-webkit-scrollbar { width: 10px; }
+.list-scroll::-webkit-scrollbar-track { background: transparent; }
+.list-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 3px solid var(--bg);
+  border-radius: 999px;
+}
+.list-scroll::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+.applist, .joblist { list-style: none; margin: 0; padding: 0; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+  cursor: pointer;
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--muted); }
+.row[hidden] { display: none; }
+
+.row-icon {
+  width: 30px; height: 30px; flex: none;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  background: var(--muted);
+}
+.row-icon--blank {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--muted-fg); font-weight: 700; font-size: 0.875rem;
+}
+
+.row-text { flex: 1 1 auto; min-width: 0; }
+.row-name {
+  font-size: 0.9375rem; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.row-id {
+  font-size: 0.75rem; color: var(--muted-fg);
+  overflow-wrap: anywhere;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* One quiet tick beside a name. A fixed slot, so names line up whether it
+   is there or not, and no fill, no pill, no capitals: a fact, not a badge. */
+.quiet-tick {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--success) 70%, var(--muted-fg));
+}
+.quiet-tick svg { display: block; }
+
+.row-size {
+  flex: none;
+  min-width: 5.5rem;
+  text-align: right;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-fg);
+}
+
+.empty, .loading {
+  margin: 0; padding: 2rem 1rem;
+  text-align: center;
+  color: var(--muted-fg);
+  font-size: 0.875rem;
+}
+.empty[hidden], .loading[hidden] { display: none; }
+
+/* --------------------------------------------------------------------- */
+/* The standing list: search, results, editable rows                       */
+/* --------------------------------------------------------------------- */
+
+.finder {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.filter--wide { width: auto; flex: 1 1 auto; min-width: 0; }
+
+.results {
+  flex: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 13rem;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.results[hidden] { display: none; }
+.results::-webkit-scrollbar { width: 10px; }
+.results::-webkit-scrollbar-track { background: transparent; }
+.results::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 3px solid var(--bg);
+  border-radius: 999px;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  min-width: 0;
+}
+.result:last-child { border-bottom: none; }
+.result:hover { background: var(--muted); }
+.result-text { min-width: 0; flex: 1 1 auto; }
+.result-name { font-size: 0.9375rem; font-weight: 600; }
+.result-sub {
+  font-size: 0.75rem; color: var(--muted-fg);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.result-add { flex: none; font-size: 0.8125rem; font-weight: 700; color: var(--accent); }
+.result[data-on="true"] .result-add { color: var(--muted-fg); }
+
+/* The backup the Keep settings apps will draw on. */
+.source {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.375rem 0.5rem 0.375rem 0.875rem;
+  min-width: 0;
+}
+.source-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-fg);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.source-text strong { color: var(--fg); font-weight: 600; }
+.source .btn { flex: none; }
+
+/* Column names, and the tick that ticks them all. Sticky so it is still
+   there halfway down sixty-seven rows. The widths match the cells below. */
+.colhead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-fg);
+}
+.colhead-all {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  min-width: 4.25rem;
+}
+.colhead-name { flex: 1 1 40%; padding-left: 0.5rem; }
+.colhead-id { flex: 1 1 60%; padding-left: 0.5rem; }
+.colhead-remote { flex: none; width: 7rem; padding-left: 0.5rem; }
+.colhead-keep { flex: none; width: 6.5rem; text-align: center; }
+.colhead-tail { flex: none; width: 1.75rem; }
+.colhead-here { flex: none; width: 1rem; }
+
+/* What to do with the ticked ones. Only there while something is ticked. */
+.bulk {
+  position: sticky;
+  top: 2.3rem;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: var(--accent-container);
+  border-bottom: 1px solid var(--border);
+}
+.bulk[hidden] { display: none; }
+.bulk-count {
+  flex: 1 1 auto;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--on-accent-container);
+}
+
+.editrow .tick { flex: none; min-width: 4.25rem; display: inline-flex; align-items: center; }
+.editrow.is-ticked { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+
+/* The per-row setting is a switch, because it is an on/off setting. Its
+   column header says what it does, and so does its accessible name. */
+.keepcell { flex: none; width: 6.5rem; display: flex; justify-content: center; }
+.keepcell .switch { min-height: 2rem; }
+.keepcell .switch .track { width: 2.25rem; height: 1.25rem; }
+.keepcell .switch .track::after { width: 0.875rem; height: 0.875rem; }
+.keepcell .switch input:checked + .track::after { transform: translateX(1rem); }
+
+/* An editable row. The inputs carry no box until the pointer is near them:
+   twenty bordered fields in a column read as a form to fill in, and this is
+   a list to glance down. */
+.editrow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.editrow:last-child { border-bottom: none; }
+.editrow:hover { background: var(--muted); }
+
+.cell {
+  font: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  min-width: 0;
+  user-select: text;
+}
+.cell:hover { border-color: var(--border); }
+.cell:focus {
+  border-color: var(--accent);
+  background: var(--bg);
+  outline: none;
+}
+.cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cell--name { flex: 1 1 40%; font-size: 0.9375rem; font-weight: 600; }
+.cell--id { flex: 1 1 60%; font-size: 0.8125rem; color: var(--muted-fg); }
+.cell--id:focus { color: var(--fg); }
+.cell--remote { flex: none; width: 7rem; font-size: 0.8125rem; color: var(--muted-fg); }
+.cell.is-bad { border-color: var(--danger); color: var(--danger); }
+
+
+/* Morphic gesture: resting is a quiet outline, hover fills, first click
+   shows a tick and asks, second click inside three seconds removes the row. */
+.drop {
+  flex: none;
+  width: 1.75rem; height: 1.75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted-fg);
+  font: inherit; font-size: 1rem; line-height: 1;
+  cursor: pointer;
+}
+.editrow:hover .drop { border-color: var(--border); }
+.drop:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.drop.is-armed { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.drop:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --------------------------------------------------------------------- */
+/* Foot bar                                                                */
+/* --------------------------------------------------------------------- */
+
+.footbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.footbar[hidden] { display: none; }
+.tally { min-width: 0; display: flex; flex-direction: column; }
+.tally-main { font-size: 0.9375rem; font-weight: 600; }
+
+/* A notification, said in the place the answer belongs rather than floated
+   over the buttons. It sits in the same line the hint uses, so nothing on
+   the screen moves when it appears, and it stands back down on its own. */
+.hint.is-said {
+  color: var(--fg);
+  font-weight: 600;
+}
+.foot-actions { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+
+/* --------------------------------------------------------------------- */
+/* Job view                                                                */
+/* --------------------------------------------------------------------- */
+
+.job-count { margin-left: auto; font-size: 0.875rem; color: var(--muted-fg); font-variant-numeric: tabular-nums; }
+
+.progress { flex: none; }
+.progress[hidden] { display: none; }
+.progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width .25s ease;
+}
+.progress-line { margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--muted-fg); }
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
+}
+
+.jobrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.jobrow:last-child { border-bottom: none; }
+.jobrow-mark {
+  flex: none;
+  width: 1.25rem; height: 1.25rem; margin-top: 0.125rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.9375rem; font-weight: 700;
+  color: var(--muted-fg);
+}
+/* Marks, not filled discs: a quiet tick for done, a dash for passed over,
+   and only a failure in a colour that asks to be looked at. */
+.jobrow[data-state="working"] .jobrow-mark { color: var(--accent); }
+.jobrow[data-state="ok"] .jobrow-mark { color: color-mix(in srgb, var(--success) 70%, var(--muted-fg)); }
+.jobrow[data-state="skipped"] .jobrow-mark { color: var(--muted-fg); }
+.jobrow[data-state="failed"] .jobrow-mark { color: var(--danger); }
+.jobrow-text { min-width: 0; flex: 1 1 auto; user-select: text; }
+.jobrow-name { font-size: 0.9375rem; font-weight: 600; }
+.jobrow-note { font-size: 0.8125rem; color: var(--muted-fg); overflow-wrap: anywhere; }
+.jobrow-note--bad { color: var(--danger); }
+
+/* --------------------------------------------------------------------- */
+/* Blocker                                                                 */
+/* --------------------------------------------------------------------- */
+
+.blocker { align-items: flex-start; justify-content: center; }
+.blocker-body { margin: 0; max-width: 60ch; color: var(--muted-fg); font-size: 0.9375rem; }
+
+/* --------------------------------------------------------------------- */
+/* Update widget, to the update-widget spec. The pixel sizes, the position  */
+/* and the pulse are exact requirements, so they are fixed px, not rem.     */
+/* --------------------------------------------------------------------- */
+
+.update-widget { display: inline-flex; align-items: center; gap: 8px; }
+.update-widget[hidden] { display: none; }
+
+.update-widget-version {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--muted-fg);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+.update-widget-version:hover { color: var(--fg); text-decoration: underline; }
+.update-widget-version:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.update-dot {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--muted-fg);
+  /* Never `disabled`: Chromium forces cursor:not-allowed on a disabled
+     button, and a no-entry sign over a status dot reads as "something is
+     wrong" rather than "nothing to do here". */
+  cursor: pointer;
+}
+.update-dot[aria-disabled="true"] { cursor: default; }
+.update-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.update-dot[data-state="current"],
+.update-dot[data-state="checking"] { background: var(--update-green); }
+.update-dot[data-state="available"] { background: var(--update-amber); }
+.update-dot[data-state="downloaded"],
+.update-dot[data-state="installing"] { background: var(--update-blue); }
+.update-dot[data-state="error"] { background: var(--update-red); }
+
+/* Downloading: a hollow ring. Light grey round the edge, and a white line
+   tracing round it as the download comes in. No pulse here. */
+.update-dot[data-state="downloading"] { background: transparent; }
+.update-dot-ring {
+  position: absolute;
+  inset: 0;
+  width: 16px;
+  height: 16px;
+  display: none;
+  transform: rotate(-90deg);
+}
+.update-dot[data-state="downloading"] .update-dot-ring { display: block; }
+.update-dot-ring-track { fill: none; stroke: #9e9d9e; stroke-width: 1.5; }
+.update-dot-ring-fill {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  /* 2 * PI * r(7) = 43.98; the dash maths is set from JS as the ring fills. */
+  stroke-dasharray: 43.98;
+  stroke-dashoffset: 43.98;
+  transition: stroke-dashoffset 0.15s linear;
+}
+
+/* The pulse. One per second, slow, like a heartbeat, and it keeps going for
+   as long as the work does: checking (a minimum of three) and installing
+   (until the app restarts). A dot that sits still while it works is a bug. */
+.update-dot.is-pulsing { animation: update-dot-beat 1s ease-in-out infinite; }
+@keyframes update-dot-beat {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(0.7);  opacity: 0.45; }
+}
+/* Reduced motion keeps the heartbeat — a still dot would say nothing is
+   happening — but drops the size change. */
+@media (prefers-reduced-motion: reduce) {
+  .update-dot.is-pulsing { animation-name: update-dot-fade; }
+  @keyframes update-dot-fade {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+  }
+}
