@@ -57,6 +57,13 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.6.2" date="2026-09-19">
+      <description>
+        <p>The Restore tab says, before you press Restore, that apps install at
+        their newest version and that a newer version can occasionally ask you
+        to set something up again.</p>
+      </description>
+    </release>
     <release version="1.6.1" date="2026-09-19">
       <description>
         <p>Keep settings starts switched on for every app that has settings on

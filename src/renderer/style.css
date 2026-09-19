@@ -565,6 +565,25 @@ input[type="checkbox"] {
    column header says what it does, and so does its accessible name. */
 .keepcell { flex: none; width: 6.5rem; display: flex; justify-content: center; }
 .keepcell .switch { min-height: 2rem; }
+/* A quiet line, not a banner: worth reading once before pressing Restore,
+   not worth shouting every time. */
+.restore-note {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--muted-fg);
+}
+.restore-note[hidden] { display: none; }
+.restore-note-mark {
+  flex: none;
+  color: var(--warning);
+  font-weight: 800;
+}
+
 /* Said, not switched: an app with nothing saved has nothing to keep. */
 .no-settings { font-size: 0.75rem; color: var(--muted-fg); white-space: nowrap; }
 .keepcell .switch .track { width: 2.25rem; height: 1.25rem; }

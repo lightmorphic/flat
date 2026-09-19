@@ -61,7 +61,7 @@
       "description": "Keeps a list of the Flatpak apps you always want and installs them all on a fresh Linux machine with one button, bringing back the settings of the ones you mark Keep settings from a backup. Backs up selected apps' data and permissions into one portable file.",
       "url": "https://flat.lightmorphic.com/",
       "downloadUrl": "https://github.com/lightmorphic/flat/releases/latest",
-      "softwareVersion": "1.6.0",
+      "softwareVersion": "1.6.2",
       "dateModified": "2026-09-19",
       "offers": {
         "@type": "Offer",
@@ -272,6 +272,7 @@
     <div class="panel">
       <ul>
         <li><strong>Logins kept in the system keyring do not travel.</strong> GNOME Keyring and KWallet sit outside Flatpak, so those apps need signing in again. Firefox and Thunderbird keep theirs in their own profile and generally come back signed in.</li>
+        <li><strong>Apps come back at their newest version.</strong> Each one is installed fresh from Flathub, not copied across. Settings almost always carry over, but now and then a newer version asks you to set something up again.</li>
         <li><strong>It is for Flatpak apps only.</strong> Native packages, Snaps and AppImages are not moved.</li>
         <li><strong>A much older distribution may not carry the same version.</strong> Flat then installs the current one and says so on that app's row.</li>
         <li><strong>Everything installs for your own user.</strong> Apps that were system-wide on the old machine come back per-user on the new one, which needs no password and behaves the same everywhere.</li>

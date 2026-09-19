@@ -93,6 +93,11 @@ has been checked.
 
 ## Known limits
 
+- **Apps come back at their newest version**, not the one you had, because
+  each is installed fresh from Flathub. Settings almost always carry over,
+  but now and then a newer version asks you to set something up again. The
+  Restore tab says so before you press Restore.
+
 - **Logins may not survive.** Apps that keep their token in the system
   keyring (GNOME Keyring, KWallet) keep it outside Flatpak entirely, so those
   sessions need signing in again. Firefox and Thunderbird profiles are

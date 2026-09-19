@@ -55,6 +55,7 @@ const els = {
   viewRestore: $('view-restore'),
   restoreOpen: $('restore-open'),
   restoreSourceText: $('restore-source-text'),
+  restoreNote: $('restore-note'),
   restoreColhead: $('restore-colhead'),
   restoreAll: $('restore-all'),
   restoreAllLabel: $('restore-all-label'),
@@ -1242,6 +1243,7 @@ function updateRestoreTally() {
 
 function showBackupSource() {
   const b = state.restore;
+  els.restoreNote.hidden = !b;
   els.restoreSourceText.textContent = '';
   if (!b) {
     els.restoreSourceText.textContent = 'Open the backup you made on your old machine.';

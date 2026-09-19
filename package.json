@@ -1,7 +1,7 @@
 {
   "name": "flat",
   "productName": "Flat",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Lightmorphic Flat: back up the settings, data and permissions of selected Flatpak apps, keep a standing list of the apps you always want, and put them all on a new machine with one button.",
   "main": "src/main/main.js",
   "license": "GPL-3.0-or-later",
