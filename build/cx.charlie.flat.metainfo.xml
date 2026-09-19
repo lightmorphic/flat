@@ -57,6 +57,14 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.7.0" date="2026-09-19">
+      <description>
+        <p>Backups leave out what apps rebuild by themselves — caches, and in
+        browsers the websites' offline copies and downloaded parts — unless
+        Full is ticked for that app. A Help page, beside the version number,
+        explains everything with pictures.</p>
+      </description>
+    </release>
     <release version="1.6.3" date="2026-09-19">
       <description>
         <p>My apps and Restore show how much each app's settings take, with

@@ -304,6 +304,131 @@ test('a switch someone flicked is remembered as their choice', () => {
   assert.deepStrictEqual(cleaned.map((a) => [a.keep, a.keepChosen]), [[false, true], [false, false], [true, false]]);
 });
 
+test('a browser backup leaves out what the browser rebuilds, and keeps what is yours', async () => {
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-trim-'));
+  const put = (rel, bytes = 1000) => {
+    const file = path.join(work, rel);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, Buffer.alloc(bytes, 1));
+  };
+  try {
+    // Laid out like Charlie's real Brave folder on 19 September 2026.
+    const brave = 'config/BraveSoftware/Brave-Browser';
+    put(`${brave}/Local State`, 100);
+    put(`${brave}/Default/Preferences`, 100);
+    put(`${brave}/Default/Bookmarks`, 500);
+    put(`${brave}/Default/Login Data`, 500);
+    put(`${brave}/Default/History`, 500);
+    put(`${brave}/Default/Extensions/nngceckbapebfimnlniiiahkandclblb/2.1/main.js`, 40000);
+    put(`${brave}/Default/Local Extension Settings/nngceckbapebfimnlniiiahkandclblb/000003.log`, 2000);
+    put(`${brave}/Default/IndexedDB/https_example.com_0.indexeddb.leveldb/1.log`, 3000);
+    put(`${brave}/Default/Service Worker/Database/MANIFEST`, 50);
+    put(`${brave}/Default/Service Worker/CacheStorage/abc/index`, 20000);
+    put(`${brave}/Default/Service Worker/ScriptCache/index`, 5000);
+    put(`${brave}/Default/adblock_cache/list`, 1100);
+    put(`${brave}/Default/GPUCache/data_1`, 90);
+    put(`${brave}/extensions_crx_cache/one.crx`, 8900);
+    put(`${brave}/component_crx_cache/two.crx`, 3200);
+    put(`${brave}/Safe Browsing/list`, 1900);
+    put(`${brave}/aoojcmojmmcbpfgoecoadbdpnagfchel/1.0/list.dat`, 1800);
+    put('cache/BraveSoftware/Brave-Browser/Default/Cache/data', 7000);
+
+    const out = fp.throwawayPaths(work);
+    const has = (rel) => out.includes(rel);
+    // Left out.
+    for (const rel of [`${brave}/Default/Service Worker/CacheStorage`, `${brave}/Default/Service Worker/ScriptCache`,
+      `${brave}/Default/adblock_cache`, `${brave}/Default/GPUCache`, `${brave}/extensions_crx_cache`,
+      `${brave}/component_crx_cache`, `${brave}/Safe Browsing`, `${brave}/aoojcmojmmcbpfgoecoadbdpnagfchel`]) {
+      assert.ok(has(rel), `should leave out ${rel}`);
+    }
+    // Kept: everything personal, and the extensions even though their
+    // folders have the same kind of name as components.
+    for (const rel of [`${brave}/Default/Extensions`, `${brave}/Default/Extensions/nngceckbapebfimnlniiiahkandclblb`,
+      `${brave}/Default/Local Extension Settings`, `${brave}/Default/IndexedDB`, `${brave}/Default/Service Worker/Database`]) {
+      assert.ok(!out.some((o) => rel === o || rel.startsWith(`${o}/`)), `must keep ${rel}`);
+    }
+
+    const sizes = await fp.settingsSizes('ignored', work);
+    assert.ok(sizes.trimmable);
+    assert.ok(sizes.trimmed < sizes.full / 2, `trimmed ${sizes.trimmed} should be well under full ${sizes.full}`);
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+});
+
+test('a trimmed backup really leaves those folders out, spaces and all', async () => {
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-pack-'));
+  try {
+    const id = 'com.example.Browser';
+    const base = path.join(work, 'var-app', id);
+    const put = (rel) => {
+      const file = path.join(base, rel);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'x');
+    };
+    const b = 'config/Browser';
+    for (const rel of [`${b}/Local State`, `${b}/Default/Preferences`, `${b}/Default/Bookmarks`,
+      `${b}/Default/Service Worker/Database/MANIFEST`, `${b}/Default/Service Worker/CacheStorage/a`,
+      `${b}/Safe Browsing/list`, 'cache/big']) put(rel);
+
+    const leaveOut = fp.throwawayPaths(base);
+    const out = path.join(work, 'blob.tar');
+    const packed = await ar.packAppData({ id, parentDir: path.join(work, 'var-app'), outFile: out, leaveOut });
+    assert.ok(packed.ok, packed.error);
+    const listed = await fp.run('tar', ['-tf', out]);
+    const names = listed.stdout.split('\n');
+    const inside = (rel) => names.some((n) => n.replace(/\/$/, '') === `${id}/${rel}`);
+    assert.ok(inside(`${b}/Default/Bookmarks`), 'bookmarks kept');
+    assert.ok(inside(`${b}/Default/Service Worker/Database/MANIFEST`), 'service worker registrations kept');
+    assert.ok(!inside(`${b}/Default/Service Worker/CacheStorage/a`), 'site offline copies left out');
+    assert.ok(!inside(`${b}/Safe Browsing/list`), 'safe browsing list left out');
+    assert.ok(!inside('cache/big'), 'cache left out');
+
+    const fullOut = path.join(work, 'full.tar');
+    await ar.packAppData({ id, parentDir: path.join(work, 'var-app'), outFile: fullOut, full: true });
+    const fullNames = (await fp.run('tar', ['-tf', fullOut])).stdout;
+    assert.ok(fullNames.includes(`${id}/cache/big`), 'full keeps the cache');
+    assert.ok(fullNames.includes('Safe Browsing/list'), 'full keeps everything');
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+});
+
+test('Firefox profiles lose their caches and keep the profile', () => {
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-trim-'));
+  const put = (rel) => {
+    const file = path.join(work, rel);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, 'x');
+  };
+  try {
+    const prof = '.mozilla/firefox/abcd1234.default-release';
+    for (const rel of ['prefs.js', 'places.sqlite', 'logins.json', 'key4.db', 'cache2/entries/a',
+      'startupCache/x', 'storage/default/https+++example.com/cache/morgue/1', 'storage/default/https+++example.com/idb/1.sqlite']) {
+      put(`${prof}/${rel}`);
+    }
+    const out = fp.throwawayPaths(work);
+    assert.ok(out.includes(`${prof}/cache2`));
+    assert.ok(out.includes(`${prof}/startupCache`));
+    assert.ok(out.includes(`${prof}/storage/default/https+++example.com/cache`));
+    assert.ok(!out.some((o) => `${prof}/storage/default/https+++example.com/idb`.startsWith(o)));
+    assert.ok(!out.some((o) => `${prof}/places.sqlite`.startsWith(o)));
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+});
+
+test('an app that is not a browser has nothing left out', () => {
+  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-trim-'));
+  try {
+    fs.mkdirSync(path.join(work, 'config', 'someapp'), { recursive: true });
+    fs.writeFileSync(path.join(work, 'config', 'someapp', 'settings.ini'), 'a=1');
+    assert.deepStrictEqual(fp.throwawayPaths(work), []);
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
+});
+
 test('a list saved under the old Flatmorphic name is still found', () => {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-oldname-'));
   try {

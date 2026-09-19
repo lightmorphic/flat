@@ -71,6 +71,9 @@ function cleanEntries(raw) {
       // on this machine keeps them by default; once someone has switched it,
       // their switch stands.
       keepChosen: item.keepChosen === true,
+      // Back up the whole folder, cache and all, rather than leaving out
+      // what the app rebuilds by itself. Off unless someone ticked it.
+      full: item.full === true,
     });
   }
   return out;

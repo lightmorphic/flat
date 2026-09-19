@@ -28,8 +28,18 @@ out on purpose. Everything starts ticked, and the number beside
 **Back up…**: the file carries the ticked apps, and the settings of the ones
 switched on. It will not start while any of those is open — Flat names them,
 with **Check again** and **Close them for me**, because a profile copied while
-its app is running comes out locked or half-written. Caches stay out unless
-**Include caches** is on.
+its app is running comes out locked or half-written.
+
+**Full** decides how much of an app's folder goes. Unticked, which is normal,
+Flat leaves out what the app rebuilds by itself: its cache, and in browsers
+and apps built like them the websites' offline copies, compiled code, GPU
+caches, block lists and downloaded components. Bookmarks, passwords, history,
+extensions and their settings, and site data all come along. On one real
+Brave profile that took the backup from 950 MB to 550 MB. Ticked, the whole
+folder goes, cache and all. The Size column follows the tick. The tick only
+appears where it would change anything, and its heading opens the help.
+
+**Help**, beside the version number, explains all of this with pictures.
 
 **Restore** opens a backup — Flat finds one on its own beside the AppImage, in
 the folder it was run from, or in Downloads — and shows the same list. The

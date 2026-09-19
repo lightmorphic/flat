@@ -30,6 +30,7 @@
     </nav>
 
     <div class="header-tools">
+      <button type="button" class="help-link" id="help-open" aria-controls="view-help">Help</button>
       <div class="update-widget" id="update-widget">
         <!-- Version only, never the app name. It links to the app's website. -->
         <a class="update-widget-version" id="update-widget-version"
@@ -145,6 +146,7 @@
         <span class="colhead-remote">Remote</span>
         <span class="colhead-size">Size</span>
         <span class="colhead-keep">Keep settings</span>
+        <button type="button" class="colhead-full" id="mine-full-help" title="What Full means">Full</button>
         <span class="colhead-tail"></span>
       </div>
       <p class="empty" id="mine-empty" hidden>Your list is empty. Search above, or press <strong>Add everything here</strong> to start from what this machine already has.</p>
@@ -157,11 +159,6 @@
         <span class="hint" id="mine-hint"></span>
       </div>
       <div class="foot-actions">
-        <label class="switch switch--small" title="Caches are large and rebuild themselves">
-          <input type="checkbox" id="include-cache">
-          <span class="track"></span>
-          <span>Include caches</span>
-        </label>
         <button type="button" class="btn btn--primary" id="mine-backup">Back up…</button>
       </div>
     </div>
@@ -218,6 +215,102 @@
       </div>
       <div class="foot-actions">
         <button type="button" class="btn btn--primary" id="restore-go" disabled>Restore</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== HELP ===================== -->
+  <main class="panel view view-help" id="view-help" hidden>
+    <div class="panel-head-row">
+      <h2 class="panel-head">How to use Flat</h2>
+      <nav class="help-jump" aria-label="Help sections">
+        <a href="#help-start">The idea</a>
+        <a href="#help-all">All apps</a>
+        <a href="#help-mine">My apps</a>
+        <a href="#help-full">Full</a>
+        <a href="#help-restore">Restore</a>
+        <a href="#help-limits">Good to know</a>
+        <a href="#help-updates">Updates</a>
+      </nav>
+    </div>
+
+    <div class="help-scroll" id="help-scroll">
+
+      <section class="help-section" id="help-start">
+        <h3>The idea</h3>
+        <p>Flat moves your Flatpak apps to a new computer, with their settings if you want them. It never copies the apps themselves: on the new computer each one is installed fresh from Flathub, at its newest version, and then your settings are put back into it.</p>
+        <ol class="help-steps">
+          <li><b>On your old computer</b> — pick your apps on <em>All apps</em>, choose which keep their settings on <em>My apps</em>, and press <em>Back up…</em>.</li>
+          <li><b>Carry one file</b> — the backup ends in <code>.fmpack</code>. Put it on a USB stick, a server, anywhere.</li>
+          <li><b>On your new computer</b> — put Flat and the backup in the same folder, open Flat, go to <em>Restore</em> and press <em>Restore</em>.</li>
+        </ol>
+      </section>
+
+      <section class="help-section" id="help-all">
+        <h3>All apps</h3>
+        <p>Everything installed on this computer, with how much each app keeps. Tick the ones you want — <em>All</em> ticks every one — and press <em>Add to My apps</em>. A small tick beside a name means it is on My apps already.</p>
+        <figure class="help-shot"><img src="help/all-apps.jpg" alt="The All apps tab with every app ticked and the Add to My apps button." width="1400" height="850"></figure>
+      </section>
+
+      <section class="help-section" id="help-mine">
+        <h3>My apps</h3>
+        <p>Your list — the apps you want on your next computer. Each row says:</p>
+        <ul class="help-list">
+          <li><b>Size</b> — how much of its settings the backup will take. Anything over 250&nbsp;MB shows in amber, as a nudge to ask whether you need it.</li>
+          <li><b>Keep settings</b> — on for every app that has settings here. Switch it off and the app comes back brand new. <em>No settings</em> means the app has saved nothing, so there is nothing to keep.</li>
+          <li><b>Full</b> — see below.</li>
+          <li><b>A small tick by the name</b> — the app is installed on this computer.</li>
+        </ul>
+        <p>Everything starts ticked. Untick anything you want left out, then press <em>Back up…</em> and choose where to save the file. If any app whose settings are going is open, Flat says which and waits: a browser copied while it is running comes out broken. <em>Check again</em> looks once more after you close it; <em>Close them for me</em> closes it for you.</p>
+        <p>To add an app you do not have yet, type its name — or paste its ID — in the search box and press <em>Add</em>.</p>
+        <figure class="help-shot"><img src="help/my-apps.jpg" alt="The My apps tab: the list of apps with Size, Keep settings and Full columns and the Back up button." width="1400" height="850"></figure>
+      </section>
+
+      <section class="help-section" id="help-full">
+        <h3>Full, or just the settings</h3>
+        <p>Browsers and apps built like them keep a lot that they can fetch again by themselves: copies of websites for offline use, speeded-up code, graphics caches, block lists and their own downloaded parts. On one real Brave browser that was 400&nbsp;MB of its 950.</p>
+        <p><b>Unticked (normal):</b> Flat leaves those out. Your bookmarks, passwords, history, open tabs, extensions and their settings, and what websites have saved for you all come along. The browser rebuilds the rest the first time it runs, which can make that first start a little slower.</p>
+        <p><b>Ticked:</b> the app's whole folder goes, cache and all, exactly as it is. Use it if something did not come back right, or for an app that is not a browser and you want to be sure of everything.</p>
+        <p>The tick only appears where it makes a difference. The Size column changes as you tick it, so you can see what it costs.</p>
+      </section>
+
+      <section class="help-section" id="help-restore">
+        <h3>Restore</h3>
+        <p>Flat finds a backup on its own if it is beside Flat or in Downloads; otherwise press <em>Open a backup…</em>. You get the same list, with <em>Keep settings</em> already on for every app whose settings are in the file. Untick anything you do not want here and press <em>Restore</em>.</p>
+        <p>Each app is installed from Flathub first, then closed, then its settings are put back — in that order, because doing it the other way round is what makes an app open looking brand new. Nothing needs a password.</p>
+        <p>An app that is already on this computer is left exactly as it is, settings and all. Anything that goes wrong is named on its own line, and Flat carries on with the next app.</p>
+        <figure class="help-shot"><img src="help/restore.jpg" alt="The Restore tab after opening a backup, with the list of apps and the Restore button." width="1400" height="850"></figure>
+      </section>
+
+      <section class="help-section" id="help-limits">
+        <h3>Good to know</h3>
+        <ul class="help-list">
+          <li><b>Apps come back at their newest version.</b> Settings almost always carry over, but now and then a newer version asks you to set something up again.</li>
+          <li><b>Some logins need doing again.</b> Apps that keep their password in your computer's keyring (GNOME Keyring or KWallet) keep it outside the app, so it cannot travel. Firefox and Thunderbird keep theirs in their own folder and usually come back signed in.</li>
+          <li><b>Flatpak apps only.</b> Apps installed another way are not moved.</li>
+          <li><b>Keep your backup safe.</b> It holds your browser's saved passwords and history, and it is not locked with a password.</li>
+        </ul>
+      </section>
+
+      <section class="help-section" id="help-updates">
+        <h3>Updates</h3>
+        <p>The small dot beside the version number, top right, keeps Flat up to date:</p>
+        <ul class="dot-key">
+          <li><span class="dot-sample" data-state="current"></span><b>Green</b> — up to date. Click it to check again.</li>
+          <li><span class="dot-sample" data-state="available"></span><b>Amber</b> — a newer version is ready. Click to download it.</li>
+          <li><span class="dot-sample" data-state="downloading"></span><b>Ring</b> — downloading.</li>
+          <li><span class="dot-sample" data-state="downloaded"></span><b>Blue</b> — downloaded. Click to restart into it.</li>
+          <li><span class="dot-sample" data-state="error"></span><b>Red</b> — GitHub could not be reached. Click to try again.</li>
+        </ul>
+        <p>More at <a href="https://flat.lightmorphic.com" target="_blank" rel="noopener noreferrer">flat.lightmorphic.com</a>.</p>
+      </section>
+
+    </div>
+
+    <div class="footbar">
+      <div class="tally"><span class="hint">Flat is free and open source.</span></div>
+      <div class="foot-actions">
+        <button type="button" class="btn btn--primary" id="help-close">Back to Flat</button>
       </div>
     </div>
   </main>

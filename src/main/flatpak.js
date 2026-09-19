@@ -253,6 +253,126 @@ function hasSettings(id) {
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// What can be left out of a backup without losing anything personal
+// ---------------------------------------------------------------------------
+//
+// Browsers keep a great deal in their profile that they fetch or rebuild by
+// themselves: websites' offline copies, compiled code, GPU caches, their own
+// downloaded components and block lists. On one real Brave profile that was
+// 400 MB of 950. None of it is bookmarks, passwords, history, extensions or
+// site logins, and all of it comes back the first time the browser runs.
+//
+// Found by what a folder holds, not by the app's name, so it covers Brave,
+// Chrome, Chromium, Vivaldi, Edge, Opera, Electron apps (Discord, Signal,
+// Obsidian and the like: same engine, same caches), Firefox, LibreWolf,
+// Waterfox and Thunderbird without a list of IDs to keep up to date.
+
+// Beside "Local State": a Chromium or Electron user-data folder.
+const CHROMIUM_ROOT_JUNK = [
+  'extensions_crx_cache', 'component_crx_cache', 'Safe Browsing',
+  'OnDeviceHeadSuggestModel', 'GPUPersistentCache', 'GrShaderCache', 'ShaderCache',
+  'GraphiteDawnCache', 'hyphen-data', 'ZxcvbnData', 'CertificateRevocation',
+  'PKIMetadata', 'Crashpad', 'Crash Reports', 'screen_ai', 'WasmTtsEngine',
+  'OptimizationGuidePredictionModels', 'optimization_guide_model_store',
+  'TrustTokenKeyCommitments', 'FirstPartySetsPreloaded', 'OriginTrials',
+  'SSLErrorAssistant', 'MEIPreload', 'Subresource Filter', 'FileTypePolicies',
+  'BrowserMetrics', 'DeferredBrowserMetrics',
+];
+// Inside each profile ("Default", "Profile 1", or an Electron app's own
+// folder, where root and profile are the same place).
+const CHROMIUM_PROFILE_JUNK = [
+  'Service Worker/CacheStorage', 'Service Worker/ScriptCache',
+  'Cache', 'Code Cache', 'GPUCache', 'DawnCache', 'DawnWebGPUCache', 'DawnGraphiteCache',
+  'adblock_cache', 'Shared Dictionary', 'blob_storage',
+  'optimization_guide_hint_cache_store', 'optimization_guide_model_metadata_store',
+];
+// Beside "prefs.js": a Firefox, LibreWolf, Waterfox or Thunderbird profile.
+const FIREFOX_PROFILE_JUNK = [
+  'cache2', 'startupCache', 'thumbnails', 'crashes', 'minidumps', 'datareporting',
+  'saved-telemetry-pings', 'safebrowsing', 'shader-cache', 'OfflineCache', 'jumpListCache',
+];
+// Components a Chromium browser installs for itself sit beside "Local
+// State" in folders named with 32 letters a to p. (Extensions use the same
+// kind of name, but inside "Extensions", which is never touched.)
+const COMPONENT_DIR = /^[a-p]{32}$/;
+
+function isFile(file) {
+  try { return fs.statSync(file).isFile(); } catch { return false; }
+}
+
+function isDir(dir) {
+  try { return fs.statSync(dir).isDirectory(); } catch { return false; }
+}
+
+function childDirs(dir) {
+  try {
+    return fs.readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && !d.isSymbolicLink())
+      .map((d) => d.name);
+  } catch {
+    return [];
+  }
+}
+
+// Returns the folders to leave out, as paths relative to the app's own
+// folder, e.g. "config/BraveSoftware/Brave-Browser/Safe Browsing".
+function throwawayPaths(root) {
+  const found = new Set();
+  const add = (abs) => { if (isDir(abs)) found.add(path.relative(root, abs)); };
+
+  const walk = (dir, depth) => {
+    if (depth > 7) return;
+    if (isFile(path.join(dir, 'Local State'))) {
+      for (const name of CHROMIUM_ROOT_JUNK) add(path.join(dir, name));
+      for (const name of childDirs(dir)) if (COMPONENT_DIR.test(name)) add(path.join(dir, name));
+      // An Electron app is its own profile.
+      for (const name of CHROMIUM_PROFILE_JUNK) add(path.join(dir, name));
+      for (const name of childDirs(dir)) {
+        const profile = path.join(dir, name);
+        if (isFile(path.join(profile, 'Preferences'))) {
+          for (const junk of CHROMIUM_PROFILE_JUNK) add(path.join(profile, junk));
+        }
+      }
+      return;
+    }
+    if (isFile(path.join(dir, 'prefs.js'))) {
+      for (const name of FIREFOX_PROFILE_JUNK) add(path.join(dir, name));
+      // Each site's offline copy under storage/default/<site>/cache.
+      const sites = path.join(dir, 'storage', 'default');
+      for (const site of childDirs(sites)) add(path.join(sites, site, 'cache'));
+      return;
+    }
+    for (const name of childDirs(dir)) {
+      if (depth === 0 && name === 'cache') continue;
+      walk(path.join(dir, name), depth + 1);
+    }
+  };
+
+  walk(root, 0);
+  // A folder inside one already left out needs no line of its own.
+  const list = [...found].sort();
+  return list.filter((p) => !list.some((q) => q !== p && p.startsWith(`${q}${path.sep}`)));
+}
+
+async function bytesOf(abs) {
+  const result = await run('du', ['-sb', abs], { timeout: 120000 });
+  const bytes = parseInt((result.stdout || '').split(/\s+/)[0], 10);
+  return Number.isFinite(bytes) ? bytes : 0;
+}
+
+// Both sizes a person chooses between on My apps: everything, cache and
+// all ("Full"), or the settings without what the app rebuilds by itself.
+async function settingsSizes(id, root = dataDir(id)) {
+  if (!isDir(root)) return { full: 0, trimmed: 0, trimmable: false };
+  const full = await bytesOf(root);
+  const cache = isDir(path.join(root, 'cache')) ? await bytesOf(path.join(root, 'cache')) : 0;
+  let saved = 0;
+  for (const rel of throwawayPaths(root)) saved += await bytesOf(path.join(root, rel));
+  const trimmed = Math.max(0, full - cache - saved);
+  return { full, trimmed, trimmable: full > trimmed };
+}
+
 // `du -sb` counts apparent size in bytes, which is what the archive will
 // roughly hold. Failing quietly to 0 matters: a permission error on one
 // stray directory must not lose the whole listing.
@@ -525,6 +645,8 @@ module.exports = {
   dataDir,
   hasData,
   hasSettings,
+  throwawayPaths,
+  settingsSizes,
   dataSize,
   dataSizes,
   readOverrideFile,

@@ -30,7 +30,7 @@ function packName(hostname) {
 // list:       [{ id, name, remote }] — every app the backup should put on a
 //             new machine, packed settings or not. The Restore tab shows this.
 // onProgress: ({ index, total, appId, step, message })
-async function runBackup({ apps, list = [], includeCache, outFile }, onProgress) {
+async function runBackup({ apps, list = [], outFile }, onProgress) {
   const emit = (payload) => { if (onProgress) onProgress(payload); };
   const total = apps.length;
   const compressor = await ar.detectCompressor();
@@ -52,11 +52,17 @@ async function runBackup({ apps, list = [], includeCache, outFile }, onProgress)
 
       emit({ index, total, appId: app.id, step: 'packing', message: `Packing ${app.name}` });
 
+      // Full takes the folder as it is. Otherwise what the app rebuilds by
+      // itself is left behind, worked out now rather than trusted from
+      // whenever the list was last measured.
+      const full = Boolean(app.full);
+      const leaveOut = full ? [] : fp.throwawayPaths(fp.dataDir(app.id));
       const packed = await ar.packAppData({
         id: app.id,
         parentDir: fp.VAR_APP,
         outFile: blobFile,
-        includeCache,
+        full,
+        leaveOut,
       });
 
       if (!packed.ok) {
@@ -92,7 +98,9 @@ async function runBackup({ apps, list = [], includeCache, outFile }, onProgress)
         blob: blobName,
         blob_bytes: blobBytes,
         sha256,
-        cache_included: Boolean(includeCache),
+        full,
+        cache_included: full,
+        left_out: leaveOut.length,
         has_overrides: Boolean(override),
         overrides_scope: override ? override.scope : null,
         permissions: fp.permissionsToArgs(permissionsRaw),

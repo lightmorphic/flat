@@ -177,7 +177,7 @@ ipcMain.handle('flatpak-probe', async () => {
 // Backup side
 // ---------------------------------------------------------------------------
 
-ipcMain.handle('scan-apps', async (event, { includeCache }) => {
+ipcMain.handle('scan-apps', async () => {
   const listed = await fp.listApps();
   if (!listed.ok) return { ok: false, error: listed.error };
 
@@ -187,16 +187,30 @@ ipcMain.handle('scan-apps', async (event, { includeCache }) => {
   });
   const ids = withData.filter((a) => a.hasData).map((a) => a.id);
 
-  const sizes = await fp.dataSizes(ids, { includeCache }, (done, total) => {
-    send('scan-progress', { done, total });
-  });
+  // Both sizes for every app with a folder: the whole thing ("Full"), and
+  // its settings without what it rebuilds by itself. A handful at a time, so
+  // sixty apps do not all hit the disk at once.
+  const sizes = {};
+  const queue = [...ids];
+  let done = 0;
+  await Promise.all(Array.from({ length: 4 }, async () => {
+    while (queue.length) {
+      const id = queue.shift();
+      sizes[id] = await fp.settingsSizes(id);
+      done += 1;
+      send('scan-progress', { done, total: ids.length });
+    }
+  }));
 
   const apps = withData.map((a) => {
-    const dataBytes = sizes[a.id] || 0;
+    const size = sizes[a.id] || { full: 0, trimmed: 0, trimmable: false };
+    const dataBytes = size.trimmed;
     const advice = recommend({ ...a, dataBytes });
     return {
       ...a,
       dataBytes,
+      fullBytes: size.full,
+      trimmable: size.trimmable,
       icon: fp.iconDataUrl(a.id),
       recommended: advice.recommended,
       reason: advice.reason,
@@ -234,11 +248,11 @@ ipcMain.handle('choose-backup-file', async () => {
   return { canceled: false, file };
 });
 
-ipcMain.handle('run-backup', async (event, { apps, list, includeCache, outFile }) => {
+ipcMain.handle('run-backup', async (event, { apps, list, outFile }) => {
   if (busy) return { ok: false, error: 'Something is already running.' };
   busy = true;
   try {
-    return await runBackup({ apps, list, includeCache, outFile }, (progress) => {
+    return await runBackup({ apps, list, outFile }, (progress) => {
       send('job-progress', progress);
     });
   } finally {

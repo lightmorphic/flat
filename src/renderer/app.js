@@ -25,7 +25,6 @@ const els = {
   allSelectNone: $('all-select-none'),
   allToMine: $('all-to-mine'),
 
-  includeCache: $('include-cache'),
   runningWarning: $('running-warning'),
   runningWarningText: $('running-warning-text'),
   closeRunning: $('close-running'),
@@ -63,6 +62,12 @@ const els = {
   restoreTally: $('restore-tally'),
   restoreHint: $('restore-hint'),
   restoreGo: $('restore-go'),
+
+  mineFullHelp: $('mine-full-help'),
+  helpOpen: $('help-open'),
+  helpClose: $('help-close'),
+  viewHelp: $('view-help'),
+  helpScroll: $('help-scroll'),
 
   jobHead: $('job-head'),
   jobCount: $('job-count'),
@@ -222,6 +227,15 @@ function showView(name) {
     pair.view.hidden = key !== name;
   }
   els.viewJob.hidden = name !== 'job';
+  els.viewHelp.hidden = name !== 'help';
+  els.helpOpen.classList.toggle('is-on', name === 'help');
+  if (name === 'help') {
+    for (const pair of Object.values(TABS)) {
+      pair.tab.classList.remove('is-on');
+      pair.tab.setAttribute('aria-selected', 'false');
+    }
+    return;
+  }
   if (!TABS[name]) return;
   // `mode` is where a finished job sends the user back to.
   state.mode = name;
@@ -233,6 +247,35 @@ function showView(name) {
 
 for (const [key, pair] of Object.entries(TABS)) {
   pair.tab.addEventListener('click', () => showView(key));
+}
+
+// Help opens at the top, or at the section a "Full" heading or similar
+// points to. Closing it goes back to whichever tab it was opened from.
+function showHelp(sectionId) {
+  showView('help');
+  // After the page has been laid out, or the jump lands short of the section.
+  requestAnimationFrame(() => {
+    const target = sectionId && document.getElementById(sectionId);
+    if (target) {
+      els.helpScroll.scrollTop = target.offsetTop;
+    } else {
+      els.helpScroll.scrollTop = 0;
+    }
+  });
+}
+
+els.helpOpen.addEventListener('click', () => {
+  if (!els.viewHelp.hidden) showView(state.mode);
+  else showHelp();
+});
+els.helpClose.addEventListener('click', () => showView(state.mode));
+els.mineFullHelp.addEventListener('click', () => showHelp('help-full'));
+// The contents links jump within the page rather than navigating anywhere.
+for (const link of document.querySelectorAll('.help-jump a')) {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    showHelp(link.getAttribute('href').slice(1));
+  });
 }
 
 // The tray menu names a destination. A job on screen is not interrupted for
@@ -376,6 +419,12 @@ function sizeCell(bytes, known) {
   return cell;
 }
 
+// What an app's settings come to, as it is set to be backed up.
+function chosenBytes(entry, app) {
+  if (!app || !app.hasSettings) return 0;
+  return entry.full ? app.fullBytes : app.dataBytes;
+}
+
 function onMineIds() {
   return new Set(state.mine.map((e) => (e.id || '').trim()).filter(Boolean));
 }
@@ -430,7 +479,7 @@ async function scanApps() {
 
   // Sizes here are without caches: they are what the app keeps, and the
   // cache switch only matters to the backup, on My apps.
-  const result = await window.flat.scanApps({ includeCache: false });
+  const result = await window.flat.scanApps();
   els.allLoading.hidden = true;
 
   if (!result.ok) {
@@ -587,12 +636,16 @@ els.mineBackup.addEventListener('click', async () => {
   // list goes into the file as names, which takes no time worth showing.
   startJob('Backing up', here.map((a) => ({ id: a.id, name: a.name })));
   const result = await window.flat.runBackup({
-    apps: here.map((a) => ({
-      id: a.id, name: a.name, branch: a.branch, arch: a.arch,
-      origin: a.origin, scope: a.scope, dataBytes: a.dataBytes,
-    })),
+    apps: here.map((a) => {
+      const entry = list.find((e) => e.id === a.id) || {};
+      return {
+        id: a.id, name: a.name, branch: a.branch, arch: a.arch,
+        origin: a.origin, scope: a.scope,
+        full: Boolean(entry.full),
+        dataBytes: chosenBytes(entry, a),
+      };
+    }),
     list: list.map(({ id, name, remote }) => ({ id, name, remote })),
-    includeCache: els.includeCache.checked,
     outFile: target.file,
   });
 
@@ -842,7 +895,7 @@ function renderMine() {
     keepBox.addEventListener('change', () => {
       entry.keep = keepBox.checked;
       entry.keepChosen = true;
-      updateMineTally();
+      renderMine();
       saveMineNow(true);
     });
 
@@ -910,9 +963,32 @@ function renderMine() {
     });
 
     const here = state.apps.find((a) => a.id === (entry.id || '').trim());
-    const size = sizeCell(here && here.hasSettings ? here.dataBytes : 0, Boolean(here));
+    const size = sizeCell(chosenBytes(entry, here), Boolean(here));
+    if (here && here.trimmable) {
+      size.title = `Settings only: ${formatBytes(here.dataBytes)} · Full: ${formatBytes(here.fullBytes)}`;
+    }
 
-    li.append(tickWrap, tag, name, id, remote, size, keepCell, drop);
+    // Full: only where it changes something — an app with settings here,
+    // being kept, that has things a trimmed backup would leave out.
+    const fullCell = document.createElement('div');
+    fullCell.className = 'fullcell';
+    if (here && here.trimmable && keeps(entry)) {
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = Boolean(entry.full);
+      box.title = 'Back up the whole folder, cache and all';
+      box.setAttribute('aria-label', `Back up all of ${entry.name || entry.id}, cache and all`);
+      box.addEventListener('change', () => {
+        entry.full = box.checked;
+        size.textContent = formatBytes(chosenBytes(entry, here)) || '—';
+        size.classList.toggle('is-heavy', chosenBytes(entry, here) >= HEAVY_BYTES);
+        updateMineTally();
+        saveMineNow(true);
+      });
+      fullCell.appendChild(box);
+    }
+
+    li.append(tickWrap, tag, name, id, remote, size, keepCell, fullCell, drop);
     els.mineList.appendChild(li);
   }
 
@@ -950,7 +1026,7 @@ function updateMineTally() {
 
   const bytes = ticked.filter(keeps).reduce((sum, e) => {
     const app = state.apps.find((a) => a.id === e.id);
-    return sum + (app && app.hasSettings ? app.dataBytes : 0);
+    return sum + chosenBytes(e, app);
   }, 0);
   els.mineTally.textContent = state.mine.length
     ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings${bytes ? ` · about ${formatBytes(bytes)} of settings` : ''}`
@@ -980,7 +1056,7 @@ function saveMineSoon() {
 async function saveMineNow(quiet) {
   clearTimeout(saveTimer);
   const result = await window.flat.listWrite({
-    apps: state.mine.map(({ id, name, remote, keep, keepChosen }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen) })),
+    apps: state.mine.map(({ id, name, remote, keep, keepChosen, full }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen), full: Boolean(full) })),
     never: [...state.mineNever],
   });
   if (result && result.ok) {
@@ -1143,7 +1219,7 @@ arming(els.mineForget, 'Forget removals', async () => {
 
 els.mineExport.addEventListener('click', async () => {
   const result = await window.flat.listExport({
-    apps: state.mine.map(({ id, name, remote, keep, keepChosen }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen) })),
+    apps: state.mine.map(({ id, name, remote, keep, keepChosen, full }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen), full: Boolean(full) })),
     never: [...state.mineNever],
   });
   if (result.canceled) return;

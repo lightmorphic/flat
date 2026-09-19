@@ -535,6 +535,18 @@ input[type="checkbox"] {
 .colhead-remote { flex: none; width: 7rem; padding-left: 0.5rem; }
 .colhead-keep { flex: none; width: 6.5rem; text-align: center; }
 .colhead-size { flex: none; width: 5.5rem; text-align: right; padding-right: 0.5rem; }
+/* The Full heading is a way into the help, so it looks like a link but
+   keeps the column's quiet capitals. */
+.colhead-full {
+  flex: none; width: 3rem; text-align: center;
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  color: var(--muted-fg);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline dotted; text-underline-offset: 3px;
+}
+.colhead-full:hover { color: var(--fg); }
+.colhead-full:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fullcell { flex: none; width: 3rem; display: flex; justify-content: center; }
 /* How much an app's settings take, so a heavy one can be left out on
    purpose. Right-aligned so the numbers line up. */
 .cell--size {
@@ -831,3 +843,70 @@ input[type="checkbox"] {
     50%      { opacity: 0.45; }
   }
 }
+
+/* --------------------------------------------------------------------- */
+/* Help                                                                    */
+/* --------------------------------------------------------------------- */
+
+.help-link {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-fg);
+  background: none;
+  border: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.help-link:hover { color: var(--fg); }
+.help-link.is-on { color: var(--on-accent); background: var(--accent); }
+.help-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.help-jump { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+.help-jump a {
+  font-size: 0.8125rem; font-weight: 600; color: var(--muted-fg);
+  text-decoration: none; padding: 0.25rem 0;
+}
+.help-jump a:hover { color: var(--fg); text-decoration: underline; }
+
+.help-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  scroll-behavior: smooth;
+  user-select: text;
+}
+@media (prefers-reduced-motion: reduce) { .help-scroll { scroll-behavior: auto; } }
+.help-scroll::-webkit-scrollbar { width: 10px; }
+.help-scroll::-webkit-scrollbar-thumb { background: var(--border); border: 3px solid var(--panel); border-radius: 999px; }
+
+.help-section { max-width: 72ch; padding: 0.5rem 0 1.5rem; scroll-margin-top: 0.5rem; }
+.help-section + .help-section { border-top: 1px solid var(--border); padding-top: 1.5rem; }
+.help-section h3 { margin: 0 0 0.6rem; font-size: 1.125rem; font-weight: 700; letter-spacing: -0.01em; }
+.help-section p { margin: 0 0 0.75rem; font-size: 0.9375rem; line-height: 1.65; color: var(--muted-fg); }
+.help-section p b, .help-section li b { color: var(--fg); font-weight: 600; }
+.help-section em { font-style: normal; color: var(--fg); font-weight: 600; }
+.help-section a { color: var(--info); }
+.help-list, .help-steps { margin: 0 0 0.75rem; padding-left: 1.2rem; color: var(--muted-fg); font-size: 0.9375rem; line-height: 1.6; }
+.help-list li, .help-steps li { margin: 0.35rem 0; }
+
+.help-shot { margin: 1rem 0 0; }
+.help-shot img {
+  display: block; width: 100%; height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-panel);
+}
+
+/* The update dot's colours, drawn rather than named. */
+.dot-key { list-style: none; margin: 0 0 0.75rem; padding: 0; }
+.dot-key li { display: flex; align-items: center; gap: 0.6rem; margin: 0.4rem 0; font-size: 0.9375rem; color: var(--muted-fg); }
+.dot-sample { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--muted-fg); }
+.dot-sample[data-state="current"] { background: var(--update-green); }
+.dot-sample[data-state="available"] { background: var(--update-amber); }
+.dot-sample[data-state="downloaded"] { background: var(--update-blue); }
+.dot-sample[data-state="error"] { background: var(--update-red); }
+.dot-sample[data-state="downloading"] { background: none; border: 2px solid #9e9d9e; box-shadow: inset 0 0 0 0 transparent; }

@@ -61,7 +61,7 @@
       "description": "Keeps a list of the Flatpak apps you always want and installs them all on a fresh Linux machine with one button, bringing back the settings of the ones you mark Keep settings from a backup. Backs up selected apps' data and permissions into one portable file.",
       "url": "https://flat.lightmorphic.com/",
       "downloadUrl": "https://github.com/lightmorphic/flat/releases/latest",
-      "softwareVersion": "1.6.2",
+      "softwareVersion": "1.7.0",
       "dateModified": "2026-09-19",
       "offers": {
         "@type": "Offer",
@@ -101,7 +101,7 @@
           "name": "What is in a backup file?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Everything in each ticked app's own folder under ~/.var/app, apart from its cache unless you switch caches on, plus the app's permission settings. For a browser that means bookmarks, history, saved passwords and cookies. The file is not encrypted, so keep it somewhere as safe as the machine it came from."
+            "text": "Your list of apps, and the settings of the ones you chose to keep: each app's own folder under ~/.var/app and its permission settings. For a browser that means bookmarks, history, saved passwords, cookies and extensions. What the app rebuilds by itself — its cache, and in browsers the websites' offline copies and downloaded parts — is left out unless you tick Full for that app. The file is not encrypted, so keep it somewhere as safe as the machine it came from."
           }
         },
         {
@@ -306,7 +306,7 @@
       </details>
       <details class="faq-item">
         <summary><h3>What is in a backup file?</h3></summary>
-        <p>Everything in each ticked app's own folder under <code>~/.var/app</code>, apart from its cache unless you switch caches on, plus the app's permission settings. For a browser that means bookmarks, history, saved passwords and cookies. The file is not encrypted, so keep it somewhere as safe as the machine it came from.</p>
+        <p>Your list of apps, and the settings of the ones you chose to keep: each app's own folder under <code>~/.var/app</code> and its permission settings. For a browser that means bookmarks, history, saved passwords, cookies and extensions. What the app rebuilds by itself — its cache, and in browsers the websites' offline copies and downloaded parts — is left out unless you tick Full for that app. The file is not encrypted, so keep it somewhere as safe as the machine it came from.</p>
       </details>
       <details class="faq-item">
         <summary><h3>What happens to an app that is already on the new machine?</h3></summary>

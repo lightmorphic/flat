@@ -132,11 +132,23 @@ async function attrFlags() {
 // `-C <parent> <app-id>` so the archive holds the directory by name and the
 // restore side can drop it straight back into ~/.var/app on a machine where
 // the home directory has a different path.
-async function packAppData({ id, parentDir, outFile, includeCache }) {
+// tar reads exclude patterns as wildcards, and folder names like
+// "Service Worker" are taken literally, so anything tar would treat as a
+// wildcard is escaped.
+function literal(pattern) {
+  return pattern.replace(/[\\*?[\]]/g, (c) => `\\${c}`);
+}
+
+// `full`: the whole folder, cache and all. Otherwise the cache folder and
+// the paths in `leaveOut` (relative to the app's folder) stay behind.
+async function packAppData({ id, parentDir, outFile, full = false, leaveOut = [] }) {
   const compressor = await detectCompressor();
   const attrs = await attrFlags();
   const args = [compressor.flag, ...attrs, '-cpf', outFile];
-  if (!includeCache) args.push(`--exclude=${id}/cache`);
+  if (!full) {
+    args.push('--anchored', `--exclude=${literal(`${id}/cache`)}`);
+    for (const rel of leaveOut) args.push(`--exclude=${literal(`${id}/${rel}`)}`);
+  }
   args.push('-C', parentDir, id);
 
   const result = await runLong('tar', args);
