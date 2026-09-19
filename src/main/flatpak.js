@@ -429,6 +429,7 @@ const NOT_AN_APP = [
   /^org\.freedesktop\.(Platform|Sdk)/,
   /^org\.gnome\.(Platform|Sdk)/,
   /\.(Locale|Debug|Sources|BaseApp|Extension)$/,
+  /\.Plugin\./,
 ];
 
 async function searchApps(term) {

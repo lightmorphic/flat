@@ -606,6 +606,13 @@ input[type="checkbox"] {
 .cell--id:focus { color: var(--fg); }
 .cell--remote { flex: none; width: 7rem; font-size: 0.8125rem; color: var(--muted-fg); }
 .cell.is-bad { border-color: var(--danger); color: var(--danger); }
+/* Shown, not edited: no box on hover, and the text can be selected to copy. */
+.cell--fixed {
+  display: block;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  border-color: transparent;
+}
+.cell--fixed:hover { border-color: transparent; }
 
 
 /* Morphic gesture: resting is a quiet outline, hover fills, first click

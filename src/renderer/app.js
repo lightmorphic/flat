@@ -40,7 +40,6 @@ const els = {
   addFlathub: $('add-flathub'),
   mineSearch: $('mine-search'),
   mineResults: $('mine-results'),
-  mineAddBlank: $('mine-add-blank'),
   mineFromInstalled: $('mine-from-installed'),
   mineForget: $('mine-forget'),
   mineImport: $('mine-import'),
@@ -92,8 +91,7 @@ const state = {
   lastBackupFile: null,
   mine: [],
   mineNever: new Set(),
-  // Entries rather than ids: a blank row being typed into has no id yet and
-  // can still be ticked.
+  // The entries themselves, so a tick follows its row through a re-render.
   mineTicked: new Set(),
   // The backup the Keep settings apps will draw on, or null.
   settingsBackup: null,
@@ -816,19 +814,17 @@ function renderMine() {
     name.placeholder = 'What you call it';
     name.setAttribute('aria-label', 'App name');
 
-    const id = document.createElement('input');
-    id.className = 'cell cell--id';
-    id.value = entry.id || '';
-    id.placeholder = 'org.example.App';
-    id.spellcheck = false;
-    id.setAttribute('aria-label', 'App ID');
+    // The ID and remote are shown, not edited. Every app on the list came
+    // from a search that found it, from this machine, or from a saved list;
+    // a box to type an ID into is only a way to mistype one.
+    const id = document.createElement('span');
+    id.className = 'cell cell--id cell--fixed';
+    id.textContent = entry.id || '';
+    id.title = entry.id || '';
 
-    const remote = document.createElement('input');
-    remote.className = 'cell cell--remote';
-    remote.value = entry.remote || 'flathub';
-    remote.placeholder = 'flathub';
-    remote.spellcheck = false;
-    remote.setAttribute('aria-label', 'Remote');
+    const remote = document.createElement('span');
+    remote.className = 'cell cell--remote cell--fixed';
+    remote.textContent = entry.remote || 'flathub';
 
     const tag = quietTick(entry.installed ? 'Installed on this machine' : null);
 
@@ -838,26 +834,16 @@ function renderMine() {
     drop.textContent = '\u00d7';
     brief(drop, `Remove ${entry.name || entry.id}`);
 
-    const markId = () => {
-      const value = id.value.trim();
-      const bad = Boolean(value) && (!APP_ID.test(value) || duplicateIds().has(value));
-      id.classList.toggle('is-bad', bad);
-    };
-    markId();
+    // A row carried over from an older list with a bad or repeated ID is
+    // still flagged, so it can be seen and removed.
+    const value = (entry.id || '').trim();
+    if (!APP_ID.test(value) || dupes.has(value)) id.classList.add('is-bad');
 
-    // Auto-save: no Save button anywhere on this screen.
-    const edit = () => {
+    // The name is only a label, so it stays editable, and saves itself.
+    name.addEventListener('input', () => {
       entry.name = name.value;
-      entry.id = id.value.trim();
-      entry.remote = remote.value.trim() || 'flathub';
-      markId();
-      updateMineTally();
       saveMineSoon();
-    };
-    if (dupes.has((entry.id || '').trim())) id.classList.add('is-bad');
-    name.addEventListener('input', edit);
-    id.addEventListener('input', edit);
-    remote.addEventListener('input', edit);
+    });
 
     // Two-click removal, per the Morphic Button standard: the first click
     // shows a tick and asks, and stands back down on its own.
@@ -1138,17 +1124,6 @@ function renderResults(found) {
 }
 
 // --- filling and moving the list --------------------------------------------
-
-els.mineAddBlank.addEventListener('click', () => {
-  // A blank row is a person about to name something, so whatever they type
-  // into it counts as explicit and clears any earlier removal of that id.
-  state.mine.push({ id: '', name: '', remote: 'flathub', installed: false });
-  renderMine();
-  updateMineTally();
-  const rows = els.mineList.querySelectorAll('.editrow');
-  const last = rows[rows.length - 1];
-  if (last) last.querySelector('.cell--name').focus();
-});
 
 els.mineFromInstalled.addEventListener('click', async () => {
   const installed = await window.flat.listFromInstalled();

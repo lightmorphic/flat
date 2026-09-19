@@ -56,8 +56,10 @@ already on the machine is never touched, settings and all.
 
 Each row is a name, an app ID like `org.mozilla.firefox`, and a remote
 (`flathub` unless you say otherwise). There is no Flathub location to look
-up — the search box turns a name into the right ID. Rows are edited in place
-and save themselves; there is no Save button.
+up: apps join the list from All apps, or from the search box, which takes a
+name or a pasted ID and only offers apps that really exist. The ID and remote
+are shown, not typed, so a list cannot hold a misspelt one. The name is only
+a label, so it can be changed in place, and it saves itself.
 
 Removing a row with its × is remembered, so **Add everything here** leaves it
 out rather than walking it back on. Ticking it on All apps, or adding it by
