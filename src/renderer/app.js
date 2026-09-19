@@ -48,16 +48,20 @@ const els = {
   mineEmpty: $('mine-empty'),
   mineTally: $('mine-tally'),
   mineHint: $('mine-hint'),
-  mineInstall: $('mine-install'),
-  mineSourceText: $('mine-source-text'),
-  mineSourceChoose: $('mine-source-choose'),
   mineAll: $('mine-all'),
   mineAllLabel: $('mine-all-label'),
-  mineBulk: $('mine-bulk'),
-  mineBulkCount: $('mine-bulk-count'),
-  mineBulkKeep: $('mine-bulk-keep'),
-  mineBulkFresh: $('mine-bulk-fresh'),
-  mineBulkRemove: $('mine-bulk-remove'),
+
+  tabRestore: $('tab-restore'),
+  viewRestore: $('view-restore'),
+  restoreOpen: $('restore-open'),
+  restoreSourceText: $('restore-source-text'),
+  restoreColhead: $('restore-colhead'),
+  restoreAll: $('restore-all'),
+  restoreAllLabel: $('restore-all-label'),
+  restoreList: $('restore-list'),
+  restoreTally: $('restore-tally'),
+  restoreHint: $('restore-hint'),
+  restoreGo: $('restore-go'),
 
   jobHead: $('job-head'),
   jobCount: $('job-count'),
@@ -93,9 +97,10 @@ const state = {
   mineNever: new Set(),
   // The entries themselves, so a tick follows its row through a re-render.
   mineTicked: new Set(),
-  // The backup the Keep settings apps will draw on, or null.
-  settingsBackup: null,
-  mineSource: 'empty',
+  // The backup open on the Restore tab, and what is ticked and switched there.
+  restore: null,
+  restoreTicked: new Set(),
+  restoreKeep: new Map(),
 };
 
 // ---------------------------------------------------------------------------
@@ -208,6 +213,7 @@ wireEye(document.querySelector('#view-mine .eye'), els.eyeMineBody);
 const TABS = {
   all: { tab: els.tabAll, view: els.viewAll },
   mine: { tab: els.tabMine, view: els.viewMine },
+  restore: { tab: els.tabRestore, view: els.viewRestore },
 };
 
 function showView(name) {
@@ -459,8 +465,12 @@ els.allToMine.addEventListener('click', async () => {
 
 // The Keep settings apps that can actually be backed up here: on this
 // machine, and holding something to back up.
+function tickedWanted() {
+  return uniqueWanted().filter((e) => state.mineTicked.has(e));
+}
+
 function keepAppsHere() {
-  const keep = new Set(uniqueWanted().filter(keeps).map((e) => e.id));
+  const keep = new Set(tickedWanted().filter(keeps).map((e) => e.id));
   return state.apps.filter((a) => keep.has(a.id) && a.hasSettings);
 }
 
@@ -528,18 +538,15 @@ arming(els.closeRunning, 'Close them for me', async () => {
 });
 
 els.mineBackup.addEventListener('click', async () => {
-  const keeping = uniqueWanted().filter(keeps);
-  if (!keeping.length) {
-    say(els.mineHint, 'Nothing is marked Keep settings, so there is nothing to back up. Fresh apps need no backup.');
+  const list = tickedWanted();
+  if (!list.length) {
+    say(els.mineHint, 'Tick the apps you want to take with you.');
     return;
   }
+  const keeping = list.filter(keeps);
   const here = keepAppsHere();
-  if (!here.length) {
-    say(els.mineHint, 'None of your Keep settings apps has any settings on this machine to back up.');
-    return;
-  }
 
-  // Not a step further while any of them is open.
+  // Not a step further while any app whose settings are going is open.
   state.running = await window.flat.runningApps();
   state.backupBlocked = true;
   updateRunningWarning();
@@ -548,12 +555,15 @@ els.mineBackup.addEventListener('click', async () => {
   const target = await window.flat.chooseBackupFile();
   if (target.canceled) return;
 
+  // The rows are the apps whose settings are being packed; the rest of the
+  // list goes into the file as names, which takes no time worth showing.
   startJob('Backing up', here.map((a) => ({ id: a.id, name: a.name })));
   const result = await window.flat.runBackup({
     apps: here.map((a) => ({
       id: a.id, name: a.name, branch: a.branch, arch: a.arch,
       origin: a.origin, scope: a.scope, dataBytes: a.dataBytes,
     })),
+    list: list.map(({ id, name, remote }) => ({ id, name, remote })),
     includeCache: els.includeCache.checked,
     outFile: target.file,
   });
@@ -571,19 +581,12 @@ els.mineBackup.addEventListener('click', async () => {
   const left = keeping.length - here.length;
   finishJob({
     head: 'Backup finished',
-    summary: `${plural(result.apps, 'app', 'apps')} saved · ${formatBytes(result.bytes)}`,
+    summary: `${plural(list.length, 'app', 'apps')} saved · ${plural(result.apps, 'with settings', 'with settings')} · ${formatBytes(result.bytes)}`,
     hint: left
-      ? `${plural(left, 'Keep settings app is', 'Keep settings apps are')} not on this machine or keep nothing yet, so ${left === 1 ? 'it was' : 'they were'} left out. ${result.file}`
+      ? `${plural(left, 'Keep settings app is', 'Keep settings apps are')} not on this machine, so ${left === 1 ? 'it goes' : 'they go'} in as a fresh install. ${result.file}`
       : result.file,
     reveal: true,
   });
-
-  // The file just made is the obvious one for the settings to come from.
-  const described = await window.flat.settingsBackupDescribe(result.file);
-  if (described && described.ok) {
-    state.settingsBackup = described;
-    showSettingsBackup();
-  }
 });
 
 // ---------------------------------------------------------------------------
@@ -728,6 +731,12 @@ els.jobDone.addEventListener('click', async () => {
   showView(state.mode);
   await loadMine();
   await scanApps();
+  const found = await window.flat.settingsBackupFind();
+  if (found && found.ok) openBackup(found);
+  if (state.restore) {
+    const again = await window.flat.settingsBackupDescribe(state.restore.file);
+    if (again && again.ok) openBackup(again);
+  }
 });
 
 
@@ -804,7 +813,7 @@ function renderMine() {
     // A switch applies immediately; nothing waits for a Save button.
     keepBox.addEventListener('change', () => {
       entry.keep = keepBox.checked;
-      showSettingsBackup();
+      updateMineTally();
       saveMineNow(true);
     });
 
@@ -880,10 +889,11 @@ function renderMine() {
   updateTicks();
 }
 
-// ---- ticking, and doing something with what is ticked ------------------------
+// ---- ticking: what goes into the backup ----------------------------------------
 
+// Ticks choose what the backup carries. Everything starts ticked, so pressing
+// Back up takes the whole list unless something is deliberately left out.
 function updateTicks() {
-  // A row that has gone keeps no tick.
   for (const entry of [...state.mineTicked]) {
     if (!state.mine.includes(entry)) state.mineTicked.delete(entry);
   }
@@ -892,8 +902,7 @@ function updateTicks() {
   els.mineAll.checked = total > 0 && ticked === total;
   els.mineAll.indeterminate = ticked > 0 && ticked < total;
   els.mineAllLabel.textContent = ticked ? `${ticked}` : 'All';
-  els.mineBulk.hidden = ticked === 0;
-  els.mineBulkCount.textContent = `${plural(ticked, 'app', 'apps')} ticked`;
+  updateMineTally();
 }
 
 els.mineAll.addEventListener('change', () => {
@@ -901,69 +910,27 @@ els.mineAll.addEventListener('change', () => {
   renderMine();
 });
 
-function markTicked(keep) {
-  let passed = 0;
-  let count = 0;
-  for (const entry of state.mineTicked) {
-    if (keep && noSettingsHere(entry.id)) { passed += 1; continue; }
-    entry.keep = keep;
-    count += 1;
-  }
-  state.mineTicked = new Set();
-  renderMine();
-  showSettingsBackup();
-  saveMineNow(true);
-  say(els.mineHint, keep
-    ? `${plural(count, 'app', 'apps')} will keep their settings.${passed ? ` ${passed} with no settings stay fresh.` : ''}`
-    : `${plural(count, 'app', 'apps')} will install fresh.`);
-}
-
-els.mineBulkKeep.addEventListener('click', () => markTicked(true));
-els.mineBulkFresh.addEventListener('click', () => markTicked(false));
-
-// Removing several at once is the same decision as removing one, so it
-// takes the same two clicks, and each removed app is remembered the same way.
-arming(els.mineBulkRemove, 'Remove', async () => {
-  const count = state.mineTicked.size;
-  for (const entry of state.mineTicked) {
-    const gone = (entry.id || '').trim();
-    if (gone) state.mineNever.add(gone);
-  }
-  state.mine = state.mine.filter((e) => !state.mineTicked.has(e));
-  state.mineTicked = new Set();
-  renderMine();
-  updateMineTally();
-  await saveMineNow(true);
-  say(els.mineHint, `${plural(count, 'app', 'apps')} removed from the list.`);
-  return true;
-});
-
 function updateMineTally() {
   const valid = uniqueWanted();
-  const missing = valid.filter((e) => !e.installed);
   const broken = state.mine.length - valid.length;
+  const ticked = valid.filter((e) => state.mineTicked.has(e));
+  const keeping = ticked.filter(keeps).length;
 
-  const keeping = valid.filter(keeps).length;
   els.mineTally.textContent = state.mine.length
-    ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings · ${missing.length} not here yet`
+    ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings`
     : 'Nothing on the list';
 
-  // What the button is about to do stays on the page, never behind the i.
+  // What the button is about to do, on the page rather than behind the i.
   if (broken) {
-    setHint(els.mineHint, `${plural(broken, 'row is', 'rows are')} a repeat or not a valid app ID, and will be skipped.`);
-  } else if (missing.length) {
-    const keepingMissing = missing.filter(keeps).length;
-    setHint(els.mineHint, keepingMissing && !state.settingsBackup
-      ? `${keepingMissing} of these keep settings, but no backup is chosen, so they would install fresh.`
-      : 'Anything already on this machine is left alone, settings and all.');
-  } else if (state.mine.length) {
-    setHint(els.mineHint, 'Everything on the list is already here.');
+    setHint(els.mineHint, `${plural(broken, 'row is', 'rows are')} a repeat or not a valid app ID, and will be left out.`);
+  } else if (!state.mine.length) {
+    setHint(els.mineHint, 'Add apps from All apps, or search for them above.');
+  } else if (!ticked.length) {
+    setHint(els.mineHint, 'Tick the apps you want to take with you.');
   } else {
-    setHint(els.mineHint, 'Search above, or start from what this machine already has.');
+    setHint(els.mineHint, `Back up saves ${plural(ticked.length, 'ticked app', 'ticked apps')}${keeping ? `, and the settings of ${keeping}` : ''}.`);
   }
-
-  els.mineInstall.textContent = missing.length ? `Install ${missing.length}` : 'Install';
-  els.mineInstall.disabled = missing.length === 0;
+  els.mineBackup.disabled = ticked.length === 0;
 }
 
 // Saving is debounced because these are auto-save fields and every keystroke
@@ -981,7 +948,6 @@ async function saveMineNow(quiet) {
     never: [...state.mineNever],
   });
   if (result && result.ok) {
-    state.mineSource = 'saved';
     state.mineNever = new Set(result.never || []);
     els.mineForget.hidden = state.mineNever.size === 0;
     if (!quiet) say(els.mineHint, 'Saved');
@@ -1010,13 +976,15 @@ function addToMine(entry, { explicit = false } = {}) {
   if (!id || state.mine.some((e) => e.id === id)) return false;
   if (!explicit && state.mineNever.has(id)) return false;
   state.mineNever.delete(id);
-  state.mine.push({
+  const row = {
     id,
     name: entry.name || id,
     remote: entry.remote || 'flathub',
     installed: Boolean(entry.installed),
     keep: Boolean(entry.keep),
-  });
+  };
+  state.mine.push(row);
+  state.mineTicked.add(row);
   return true;
 }
 
@@ -1057,13 +1025,11 @@ async function loadMine() {
   const loaded = await window.flat.listRead();
   state.mine = loaded.apps;
   state.mineNever = new Set(loaded.never || []);
-  state.mineSource = loaded.source;
   els.mineForget.hidden = state.mineNever.size === 0;
   els.flathubWarning.hidden = loaded.hasFlathub;
-  els.minePortableName.textContent = loaded.portableName;
+  state.mineTicked = new Set(state.mine);
   renderMine();
   updateMineTally();
-  await findSettingsBackup();
 }
 
 // --- searching for something to add -----------------------------------------
@@ -1165,30 +1131,160 @@ els.mineImport.addEventListener('click', async () => {
   await loadMine();
 });
 
-arming(els.addFlathub, 'Add Flathub', async () => {
-  const result = await window.flat.addFlathub();
-  if (!result.ok) return false;
-  await loadMine();
-  return true;
-});
-
 // --- installing --------------------------------------------------------------
 
-els.mineInstall.addEventListener('click', async () => {
-  // The whole list goes down, not just the missing part. The ones already
-  // here are named as they are passed over, so the run accounts for every
-  // app on the list rather than quietly showing a shorter one.
-  const wanted = uniqueWanted();
-  if (!wanted.some((e) => !e.installed)) return;
+// ---------------------------------------------------------------------------
+// Restore: open a backup, choose, press Restore
+// ---------------------------------------------------------------------------
 
-  startJob('Installing', wanted.map((e) => ({ id: e.id, name: e.name || e.id })));
+function restoreEntries() {
+  return state.restore ? state.restore.entries : [];
+}
+
+function renderRestore() {
+  els.restoreList.textContent = '';
+  const entries = restoreEntries();
+  els.restoreColhead.hidden = entries.length === 0;
+
+  for (const entry of entries) {
+    const li = document.createElement('li');
+    li.className = 'editrow';
+    const ticked = state.restoreTicked.has(entry.id);
+    li.classList.toggle('is-ticked', ticked);
+
+    const tickWrap = document.createElement('label');
+    tickWrap.className = 'tick';
+    const tick = document.createElement('input');
+    tick.type = 'checkbox';
+    tick.checked = ticked;
+    tick.setAttribute('aria-label', `Restore ${entry.name}`);
+    tick.addEventListener('change', () => {
+      if (tick.checked) state.restoreTicked.add(entry.id);
+      else state.restoreTicked.delete(entry.id);
+      li.classList.toggle('is-ticked', tick.checked);
+      updateRestoreTally();
+    });
+    tickWrap.appendChild(tick);
+
+    const here = quietTick(entry.installed ? 'Already on this machine' : null);
+
+    const name = document.createElement('span');
+    name.className = 'cell cell--name cell--fixed';
+    name.textContent = entry.name;
+
+    const id = document.createElement('span');
+    id.className = 'cell cell--id cell--fixed';
+    id.textContent = entry.id;
+    id.title = entry.id;
+
+    // On for every app whose settings are in the backup; the plain words
+    // where there are none, so there is nothing to switch on in vain.
+    const keepCell = document.createElement('div');
+    keepCell.className = 'keepcell';
+    if (entry.keep) {
+      const label = document.createElement('label');
+      label.className = 'switch';
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.setAttribute('role', 'switch');
+      box.checked = state.restoreKeep.get(entry.id) !== false;
+      box.setAttribute('aria-label', `Bring back the settings of ${entry.name}`);
+      box.addEventListener('change', () => {
+        state.restoreKeep.set(entry.id, box.checked);
+        updateRestoreTally();
+      });
+      const track = document.createElement('span');
+      track.className = 'track';
+      label.append(box, track);
+      keepCell.appendChild(label);
+    } else {
+      const none = document.createElement('span');
+      none.className = 'no-settings';
+      none.textContent = 'No settings';
+      none.title = 'The backup holds no settings for this app, so it installs fresh';
+      keepCell.appendChild(none);
+    }
+
+    li.append(tickWrap, here, name, id, keepCell);
+    els.restoreList.appendChild(li);
+  }
+  updateRestoreTally();
+}
+
+function updateRestoreTally() {
+  const entries = restoreEntries();
+  const ticked = entries.filter((e) => state.restoreTicked.has(e.id));
+  const withSettings = ticked.filter((e) => e.keep && state.restoreKeep.get(e.id) !== false).length;
+  const already = ticked.filter((e) => e.installed).length;
+
+  els.restoreAll.checked = entries.length > 0 && ticked.length === entries.length;
+  els.restoreAll.indeterminate = ticked.length > 0 && ticked.length < entries.length;
+  els.restoreAllLabel.textContent = ticked.length ? `${ticked.length}` : 'All';
+
+  if (!state.restore) {
+    els.restoreTally.textContent = 'No backup open';
+    setHint(els.restoreHint, '');
+  } else {
+    els.restoreTally.textContent = `${plural(ticked.length, 'app', 'apps')} ticked · ${withSettings} with settings`;
+    setHint(els.restoreHint, already
+      ? `${already} ${already === 1 ? 'is' : 'are'} already on this machine and will be left alone, settings and all.`
+      : 'Untick anything you do not want here.');
+  }
+  els.restoreGo.disabled = ticked.filter((e) => !e.installed).length === 0;
+}
+
+function showBackupSource() {
+  const b = state.restore;
+  els.restoreSourceText.textContent = '';
+  if (!b) {
+    els.restoreSourceText.textContent = 'Open the backup you made on your old machine.';
+    return;
+  }
+  const strong = document.createElement('strong');
+  strong.textContent = b.name;
+  const when = b.created ? new Date(b.created).toLocaleDateString() : '';
+  els.restoreSourceText.append(strong, `${b.host ? `, made on ${b.host}` : ''}${when ? ` on ${when}` : ''}.`);
+}
+
+function openBackup(described) {
+  state.restore = described;
+  state.restoreTicked = new Set(described.entries.map((e) => e.id));
+  state.restoreKeep = new Map();
+  showBackupSource();
+  renderRestore();
+}
+
+els.restoreAll.addEventListener('change', () => {
+  state.restoreTicked = els.restoreAll.checked ? new Set(restoreEntries().map((e) => e.id)) : new Set();
+  renderRestore();
+});
+
+els.restoreOpen.addEventListener('click', async () => {
+  const chosen = await window.flat.settingsBackupChoose();
+  if (chosen.canceled) return;
+  if (!chosen.ok) {
+    say(els.restoreHint, chosen.error);
+    return;
+  }
+  openBackup(chosen);
+});
+
+els.restoreGo.addEventListener('click', async () => {
+  if (!state.restore) return;
+  const wanted = restoreEntries().filter((e) => state.restoreTicked.has(e.id));
+  if (!wanted.length) return;
+
+  startJob('Restoring', wanted.map((e) => ({ id: e.id, name: e.name })));
   const result = await window.flat.installApps({
-    apps: wanted.map(({ id, name, remote, keep }) => ({ id, name, remote, keep: Boolean(keep) })),
-    packFile: state.settingsBackup ? state.settingsBackup.file : null,
+    apps: wanted.map((e) => ({
+      id: e.id, name: e.name, remote: e.remote,
+      keep: Boolean(e.keep) && state.restoreKeep.get(e.id) !== false,
+    })),
+    packFile: state.restore.file,
   });
 
   if (!result.ok) {
-    finishJob({ head: 'Install failed', summary: result.error, bad: true });
+    finishJob({ head: 'Restore failed', summary: result.error, bad: true });
     return;
   }
 
@@ -1196,67 +1292,28 @@ els.mineInstall.addEventListener('click', async () => {
     if (entry.skipped) noteOnce(entry.id, 'skipped', 'Already here, so it was left alone');
     else if (!entry.ok) noteOnce(entry.id, 'failed', entry.error);
   }
-  for (const [id, note] of Object.entries(result.settingsNotes || {})) {
-    addJobNote(id, note.text, note.bad);
-  }
+  for (const [id, note] of Object.entries(result.settingsNotes || {})) addJobNote(id, note.text, note.bad);
 
   const parts = [`${plural(result.succeeded, 'app', 'apps')} installed`];
   if (result.settingsRestored) parts.push(`${result.settingsRestored} with settings back`);
   if (result.skipped) parts.push(`${result.skipped} already here`);
   if (result.failed) parts.push(`${result.failed} failed`);
-
   const problems = result.failed || result.settingsMissed;
   finishJob({
     head: problems ? 'Finished, with problems' : 'Finished',
     summary: parts.join(' \u00b7 '),
     hint: result.failed
-      ? 'A failure is usually a wrong ID, or a remote that does not carry that app.'
-      : result.settingsMissed
-        ? `${plural(result.settingsMissed, 'app', 'apps')} marked Keep settings went on fresh — each row says why.`
-        : 'Sign in again anywhere an app kept its login in the system keyring.',
+      ? 'A failure is usually an app the remote no longer carries.'
+      : 'Sign in again anywhere an app kept its login in the system keyring.',
     bad: Boolean(problems),
   });
 });
 
-// ---- the backup the Keep settings apps draw on --------------------------------
-
-function showSettingsBackup() {
-  const b = state.settingsBackup;
-  els.mineSourceText.textContent = '';
-  if (!b) {
-    els.mineSourceText.textContent = 'No backup found. Keep settings apps would install fresh.';
-    els.mineSourceChoose.textContent = 'Choose a backup…';
-    updateMineTally();
-    return;
-  }
-  const keepers = state.mine.filter(keeps);
-  const covered = keepers.filter((e) => b.ids.includes(e.id)).length;
-  const strong = document.createElement('strong');
-  strong.textContent = b.name;
-  const when = b.created ? new Date(b.created).toLocaleDateString() : '';
-  els.mineSourceText.append(
-    'Settings come from ', strong,
-    `${b.host ? `, made on ${b.host}` : ''}${when ? ` on ${when}` : ''}.`,
-    keepers.length ? ` It holds ${covered} of your ${keepers.length} Keep settings apps.` : '',
-  );
-  els.mineSourceChoose.textContent = 'Choose another…';
-  updateMineTally();
-}
-
-async function findSettingsBackup() {
-  state.settingsBackup = await window.flat.settingsBackupFind();
-  showSettingsBackup();
-}
-
-els.mineSourceChoose.addEventListener('click', async () => {
-  const chosen = await window.flat.settingsBackupChoose();
-  if (chosen.canceled) return;
-  if (!chosen.ok) {
-    say(els.mineHint, chosen.error);
-    return;
-  }
-  state.settingsBackup = chosen;
-  showSettingsBackup();
+arming(els.addFlathub, 'Add Flathub', async () => {
+  const result = await window.flat.addFlathub();
+  if (!result.ok) return false;
+  els.flathubWarning.hidden = true;
+  return true;
 });
 
 // ---------------------------------------------------------------------------

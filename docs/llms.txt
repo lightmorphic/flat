@@ -4,7 +4,7 @@
 
 Flat is free and open source (GPL-3.0-or-later), distributed as a single Linux AppImage for x86_64. It drives the `flatpak` command rather than linking against libflatpak, so it runs on any distribution with Flatpak installed, and it installs everything at user scope, so no administrator password is needed.
 
-A backup (`.fmpack`) is a plain tar holding a manifest and one zstd-compressed archive per app, each checksummed with SHA-256. A restore runs in a fixed order — add the remote, install the app, close it, clear the directory the install created, unpack the data, set ownership to the current user, restore permission overrides — because getting that order wrong is what makes a restored app open as if brand new. The Install button on the My apps tab restores settings only for apps it has just installed, and never overwrites an app already on the machine.
+A backup (`.fmpack`) is a plain tar holding a manifest and one zstd-compressed archive per app, each checksummed with SHA-256. A restore runs in a fixed order — add the remote, install the app, close it, clear the directory the install created, unpack the data, set ownership to the current user, restore permission overrides — because getting that order wrong is what makes a restored app open as if brand new. The Restore tab brings back settings only for apps it has just installed, and never overwrites an app already on the machine.
 
 Made by Lightmorphic (https://lightmorphic.com), a UK studio building fast, privacy-first websites and free open-source tools.
 

@@ -10,47 +10,31 @@ runs on a bare new install, before anything else has been set up.
 
 ![Flat's My apps tab](docs/images/screenshot-my-apps.jpg)
 
-## Two tabs
+## Three tabs
 
 **All apps** lists every Flatpak app on this machine, with the size of the
 settings and data each one keeps. Tick the ones you want — **All** ticks every
-one — and press **Add to My apps**. They arrive there as Fresh installs. An
-app already on My apps carries a small tick.
+one — and press **Add to My apps**. An app already on My apps carries a small
+tick.
 
-**My apps** is your list, the one you carry from machine to machine. Each app
-is **Fresh** or **Keep settings**, set with the switch on its row, or for
-many at once by ticking rows — the tick at the top ticks them all — and
-pressing **Keep settings** or **Fresh** above the list. A small tick beside a
-name means it is installed on this machine.
+**My apps** is your list. Switch **Keep settings** on for the apps whose
+settings you want on the next machine; an app that has saved nothing says
+**No settings** instead. Everything starts ticked, and the number beside
+**All** says how many. Untick anything you want left out and press
+**Back up…**: the file carries the ticked apps, and the settings of the ones
+switched on. It will not start while any of those is open — Flat names them,
+with **Check again** and **Close them for me**, because a profile copied while
+its app is running comes out locked or half-written. Caches stay out unless
+**Include caches** is on.
 
-An app installed on this machine that has saved nothing outside its cache
-says **No settings** in place of a switch: there is nothing to keep, so there
-is nothing to switch on. For an app on the list that is not on this machine,
-Flat cannot tell, so it keeps its switch.
-
-## Moving to a new machine
-
-On the machine you are leaving:
-
-1. On My apps, mark the apps whose settings matter as Keep settings.
-2. Press **Back up settings…**. Every Keep settings app that is on this
-   machine is packed into one file,
-   `flatpak-backup-<hostname>-<YYYY-MM-DD>.fmpack`. Fresh apps need no
-   backup. Caches are left out unless **Include caches** is on.
-3. If any of them is open, the backup does not start: Flat names them, with
-   **Check again** and **Close them for me**. A profile copied while its app
-   is running comes out locked or half-written.
-4. Press **Save the list…** for the small `flat-apps.json`.
-
-On the new machine: put Flat, the backup and the list in one folder, open
-Flat, and press **Install** on My apps. Every app goes on at user scope, with
-no password, and then the Keep settings ones get their settings back from
-the backup, which Flat finds on its own beside the AppImage, in the folder it
-was run from, or in Downloads; **Choose a backup…** picks another. The run
-shows a row for every app on the list: the ones already installed are passed
-over, the new ones tick, and a failure is named and the run carries on to the
-next. Only apps this Install actually puts on get their settings back — an app
-already on the machine is never touched, settings and all.
+**Restore** opens a backup — Flat finds one on its own beside the AppImage, in
+the folder it was run from, or in Downloads — and shows the same list. The
+switch is already on for every app whose settings are in the file. Untick
+anything you do not want and press **Restore**: every app goes on at user
+scope, with no password, and then the switched-on ones get their settings
+back. An app already on the machine is passed over and never touched,
+settings and all. Anything that fails is named on its own row, and the run
+carries on to the next app.
 
 ## The list
 
@@ -70,8 +54,8 @@ about the list rather than about one machine.
 Anything the app wants to tell you is said in the line under the tally and
 clears itself after a few seconds. Nothing floats over the buttons.
 
-If Flathub is missing entirely — likely on a brand new install — the screen
-says so and offers to add it.
+If Flathub is missing entirely — likely on a brand new install — the
+Restore tab says so and offers to add it.
 
 ## Remotes
 
@@ -125,7 +109,7 @@ has been checked.
 A `.fmpack` is a plain (uncompressed) tar holding:
 
 ```
-manifest.json            what is inside, and how to put it back
+manifest.json            the app list, what is inside, and how to put it back
 overrides/global         the machine's global override file, if any
 overrides/app/<app-id>   that app's own override file, if any
 apps/<app-id>.tar.zst    that app's ~/.var/app directory
@@ -142,9 +126,9 @@ fall back to gzip, and the manifest records which was used.
 ## The tray icon
 
 Flat sits in the system tray while it is open. The menu goes straight
-to either tab, and the tooltip shows how far a running job has got.
+to any tab, and the tooltip shows how far a running job has got.
 
-Closing the window while a backup or install is running hides it to
+Closing the window while a backup or restore is running hides it to
 the tray and lets the job finish — useful during a sixty-app install you do
 not want to sit and watch. With nothing running, closing the window closes the
 app. Quit on the tray menu ends it either way, once any running job is done.

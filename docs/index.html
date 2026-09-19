@@ -61,7 +61,7 @@
       "description": "Keeps a list of the Flatpak apps you always want and installs them all on a fresh Linux machine with one button, bringing back the settings of the ones you mark Keep settings from a backup. Backs up selected apps' data and permissions into one portable file.",
       "url": "https://flat.lightmorphic.com/",
       "downloadUrl": "https://github.com/lightmorphic/flat/releases/latest",
-      "softwareVersion": "1.5.1",
+      "softwareVersion": "1.6.0",
       "dateModified": "2026-09-19",
       "offers": {
         "@type": "Offer",
@@ -109,7 +109,7 @@
           "name": "What happens to an app that is already on the new machine?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The Install button leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Install has just put on, so nothing already set up on a machine is overwritten."
+            "text": "Restore leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Restore has just put on, so nothing already set up on a machine is overwritten."
           }
         },
         {
@@ -166,7 +166,7 @@
   <div class="wrap hero-grid">
     <div>
       <h1>A fresh install,<br>and everything back on&nbsp;it.</h1>
-      <p class="lede">Flat keeps a list of the Flatpak apps you always want. On a new machine, open it and press Install: every app goes on, and the ones you have marked <strong>Keep settings</strong> come back with their profiles, bookmarks and preferences. Changing distribution stops meaning an afternoon of setting things up again.</p>
+      <p class="lede">Flat keeps a list of the Flatpak apps you always want. On a new machine, open your backup and press Restore: every app goes on, and the ones you have marked <strong>Keep settings</strong> come back with their profiles, bookmarks and preferences. Changing distribution stops meaning an afternoon of setting things up again.</p>
       <div class="hero-cta">
         <a class="btn primary" href="#download">Download</a>
         <a class="btn ghost" href="#how">How it works</a>
@@ -178,8 +178,8 @@
       <p class="routine-title">On the new machine</p>
       <ol>
         <li><span><b>Download two files into one folder</b>Flat, and the backup you made on the old machine.</span></li>
-        <li><span><b>Open Flat</b>It finds the backup and your app list on its own.</span></li>
-        <li><span><b>Press Install</b>Every app goes on, and the Keep settings ones get their settings back.</span></li>
+        <li><span><b>Open Flat</b>The Restore tab finds the backup on its own.</span></li>
+        <li><span><b>Press Restore</b>Every app goes on, and the Keep settings ones get their settings back.</span></li>
       </ol>
       <p class="routine-note">No terminal, and no password: everything goes in for your own user.</p>
     </aside>
@@ -190,8 +190,8 @@
 
 <section id="how" aria-labelledby="how-title">
   <div class="wrap">
-    <h2 id="how-title">Pick your apps. Back up. Install.</h2>
-    <p class="section-intro">Flat has two tabs: All apps, which is everything on this machine, and My apps, the list you carry to the next one.</p>
+    <h2 id="how-title">Pick your apps. Back up. Restore.</h2>
+    <p class="section-intro">Flat has three tabs: All apps, which is everything on this machine; My apps, the list you carry to the next one; and Restore, where it arrives.</p>
     <div class="steps">
       <article class="panel">
         <span class="step-num" aria-hidden="true">1</span>
@@ -201,12 +201,12 @@
       <article class="panel">
         <span class="step-num" aria-hidden="true">2</span>
         <h3>Back up</h3>
-        <p>Back up settings packs every Keep settings app into one <code>.fmpack</code> file, saved wherever you choose. It will not start while any of them is open, and it says which. Each app inside is checksummed, so a damaged copy is caught instead of restored.</p>
+        <p>Back up saves your list, and the settings of every Keep settings app, into one <code>.fmpack</code> file wherever you choose. It will not start while any of those is open, and it says which. Each app inside is checksummed, so a damaged copy is caught instead of restored.</p>
       </article>
       <article class="panel">
         <span class="step-num" aria-hidden="true">3</span>
-        <h3>Install</h3>
-        <p>On the new machine, the My apps tab installs everything on your list in one go, then brings back the settings of the apps you marked to keep. Anything that goes wrong is named on its own row, and the run carries on to the next app.</p>
+        <h3>Restore</h3>
+        <p>On the new machine, the Restore tab shows the same list from the backup, with the switch already on for every app whose settings came along. Press Restore and it installs them in one go, then brings those settings back. Anything that goes wrong is named on its own row, and the run carries on to the next app.</p>
       </article>
     </div>
     <div class="shots">
@@ -217,8 +217,8 @@
       </figure>
       <figure class="shot">
         <img src="images/screenshot-install-run.jpg" width="1600" height="971" loading="lazy"
-             alt="An install run: seven apps each with a green tick, three noting their settings were brought back from the backup, one noting it was already on the machine.">
-        <figcaption>Install: every app accounted for, including the ones already there.</figcaption>
+             alt="A restore run: seven apps each with a green tick, three noting their settings were brought back from the backup, one noting it was already on the machine.">
+        <figcaption>Restore: every app accounted for, including the ones already there.</figcaption>
       </figure>
     </div>
   </div>
@@ -227,11 +227,11 @@
 <section id="keep" aria-labelledby="keep-title">
   <div class="wrap">
     <h2 id="keep-title">Fresh, or keep the settings</h2>
-    <p class="section-intro">Some apps you want as new. Others you want exactly as you left them. Each app on your list gets a switch, and one tick at the top marks them all at once.</p>
+    <p class="section-intro">Some apps you want as new. Others you want exactly as you left them. Each app on your list gets a switch. An app that has saved nothing says so, so there is nothing to switch on by mistake.</p>
     <figure class="shot">
       <img src="images/screenshot-my-apps.jpg" width="1600" height="971" loading="lazy"
-           alt="The My apps tab: a list of 67 Flatpak apps with name, app ID, remote, a Keep settings switch and whether each is already installed, above a line naming the backup the settings will come from.">
-      <figcaption>My apps: the list you carry from machine to machine, with the backup its settings will come from named above it.</figcaption>
+           alt="The My apps tab: a list of 67 Flatpak apps, all ticked, each with its name, app ID, remote and a Keep settings switch, and a Back up button.">
+      <figcaption>My apps: the list you carry from machine to machine. Switch on the ones whose settings matter and press Back up.</figcaption>
     </figure>
     <div class="bento" style="margin-top:1.5rem">
       <article class="panel">
@@ -246,7 +246,7 @@
           <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
           Never overwrites what is there
         </h3>
-        <p>Settings are brought back only for apps the Install button has just put on. An app already on the machine is left exactly as it is, however the switch is set.</p>
+        <p>Settings are brought back only for apps Restore has just put on. An app already on the machine is left exactly as it is, however the switch is set.</p>
       </article>
       <article class="panel">
         <h3>
@@ -309,7 +309,7 @@
       </details>
       <details class="faq-item">
         <summary><h3>What happens to an app that is already on the new machine?</h3></summary>
-        <p>The Install button leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Install has just put on, so nothing already set up on a machine is overwritten.</p>
+        <p>Restore leaves it alone, settings and all: it names it as already there and moves on to the next. Settings are only ever brought back for apps that Restore has just put on, so nothing already set up on a machine is overwritten.</p>
       </details>
       <details class="faq-item">
         <summary><h3>Does it need a password?</h3></summary>

@@ -5,6 +5,7 @@ const path = require('path');
 const os = require('os');
 const fp = require('./flatpak');
 const ar = require('./archive');
+const { cleanEntries } = require('./applist');
 
 function sourceDistro() {
   // /etc/os-release is the only thing every distro agrees on. It is a record
@@ -24,9 +25,12 @@ function packName(hostname) {
   return `flatpak-backup-${safeHost}-${date}.fmpack`;
 }
 
-// apps:       [{ id, name, branch, arch, origin, scope }]
+// apps:       [{ id, name, branch, arch, origin, scope }] — the apps whose
+//             settings are packed
+// list:       [{ id, name, remote }] — every app the backup should put on a
+//             new machine, packed settings or not. The Restore tab shows this.
 // onProgress: ({ index, total, appId, step, message })
-async function runBackup({ apps, includeCache, outFile }, onProgress) {
+async function runBackup({ apps, list = [], includeCache, outFile }, onProgress) {
   const emit = (payload) => { if (onProgress) onProgress(payload); };
   const total = apps.length;
   const compressor = await ar.detectCompressor();
@@ -103,6 +107,15 @@ async function runBackup({ apps, includeCache, outFile }, onProgress) {
       fs.writeFileSync(path.join(stage, 'overrides', 'global'), globalOverride, 'utf8');
     }
 
+    // The whole list, each marked with whether its settings came along. An
+    // app whose packing failed is on the list as a fresh install rather than
+    // missing from it.
+    const packed = new Set(manifestApps.map((a) => a.id));
+    const carried = cleanEntries([
+      ...list,
+      ...apps.map((a) => ({ id: a.id, name: a.name, remote: a.origin })),
+    ]).map((e) => ({ ...e, keep: packed.has(e.id) }));
+
     const flatpakInfo = await fp.probe();
     const manifest = {
       format_version: ar.FORMAT_VERSION,
@@ -113,6 +126,7 @@ async function runBackup({ apps, includeCache, outFile }, onProgress) {
       compression: compressor.name,
       has_global_override: Boolean(globalOverride),
       remotes: await fp.listRemotes(),
+      list: carried,
       apps: manifestApps,
     };
     fs.writeFileSync(path.join(stage, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');

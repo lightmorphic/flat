@@ -234,11 +234,11 @@ ipcMain.handle('choose-backup-file', async () => {
   return { canceled: false, file };
 });
 
-ipcMain.handle('run-backup', async (event, { apps, includeCache, outFile }) => {
+ipcMain.handle('run-backup', async (event, { apps, list, includeCache, outFile }) => {
   if (busy) return { ok: false, error: 'Something is already running.' };
   busy = true;
   try {
-    return await runBackup({ apps, includeCache, outFile }, (progress) => {
+    return await runBackup({ apps, list, includeCache, outFile }, (progress) => {
       send('job-progress', progress);
     });
   } finally {
@@ -375,6 +375,7 @@ function findBackups() {
 async function describeBackup(file) {
   const read = await ar.readManifest(file);
   if (!read.ok) return { ok: false, error: read.error };
+  const installed = new Set((await fp.listApps()).apps.map((a) => a.id));
   return {
     ok: true,
     file,
@@ -382,6 +383,9 @@ async function describeBackup(file) {
     created: read.manifest.created,
     host: read.manifest.source_host,
     ids: (read.manifest.apps || []).map((a) => a.id),
+    // Everything the backup would put on this machine, in the order it was
+    // saved, and whether each one is here already.
+    entries: read.manifest.list.map((e) => ({ ...e, installed: installed.has(e.id) })),
   };
 }
 

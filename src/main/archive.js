@@ -22,7 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { run, runLong } = require('./flatpak');
-const { isValidId, isValidRemote } = require('./applist');
+const { isValidId, isValidRemote, cleanEntries } = require('./applist');
 
 const BRANCH = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
@@ -50,7 +50,14 @@ function cleanManifest(manifest) {
     return ok;
   });
 
-  return { ...manifest, remotes, apps, dropped };
+  // The app list is checked the same way as a list file. A backup made
+  // before the list was carried has none, so the packed apps stand in for it.
+  const packed = new Set(apps.map((a) => a.id));
+  const list = Array.isArray(manifest.list)
+    ? cleanEntries(manifest.list).map((e) => ({ ...e, keep: packed.has(e.id) }))
+    : apps.map((a) => ({ id: a.id, name: a.name || a.id, remote: a.origin, keep: true }));
+
+  return { ...manifest, remotes, list, apps, dropped };
 }
 
 const FORMAT_VERSION = 1;

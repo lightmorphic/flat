@@ -558,7 +558,8 @@ input[type="checkbox"] {
 }
 
 .editrow .tick { flex: none; min-width: 4.25rem; display: inline-flex; align-items: center; }
-.editrow.is-ticked { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+/* No tint for a ticked row: everything starts ticked, and a whole list in
+   a yellow wash reads as muddy, not as chosen. The tick box says it. */
 
 /* The per-row setting is a switch, because it is an on/off setting. Its
    column header says what it does, and so does its accessible name. */
