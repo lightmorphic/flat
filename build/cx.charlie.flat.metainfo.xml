@@ -57,6 +57,12 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.7.1" date="2026-09-19">
+      <description>
+        <p>Removing an app from My apps now clears its tick on All apps straight
+        away, without restarting Flat.</p>
+      </description>
+    </release>
     <release version="1.7.0" date="2026-09-19">
       <description>
         <p>Backups leave out what apps rebuild by themselves — caches, and in

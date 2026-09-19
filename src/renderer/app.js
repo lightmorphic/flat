@@ -246,7 +246,13 @@ function showView(name) {
 }
 
 for (const [key, pair] of Object.entries(TABS)) {
-  pair.tab.addEventListener('click', () => showView(key));
+  pair.tab.addEventListener('click', () => {
+    // Looked at afresh on arrival, so a tab never shows what was true
+    // before something changed on another one.
+    if (key === 'all' && state.apps.length) { renderAllList(); updateAllTally(); }
+    if (key === 'mine') renderMine();
+    showView(key);
+  });
 }
 
 // Help opens at the top, or at the section a "Full" heading or similar
@@ -995,6 +1001,12 @@ function renderMine() {
   els.mineEmpty.hidden = state.mine.length > 0;
   els.mineAll.closest('.colhead').hidden = state.mine.length === 0;
   updateTicks();
+  // All apps marks which apps are on this list, so it follows every change
+  // here at once, rather than showing yesterday's list until Flat restarts.
+  if (state.apps.length) {
+    renderAllList();
+    updateAllTally();
+  }
 }
 
 // ---- ticking: what goes into the backup ----------------------------------------
