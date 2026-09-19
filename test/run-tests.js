@@ -295,6 +295,15 @@ test('Keep settings is only ever a real yes, and survives saving', () => {
   }
 });
 
+test('a switch someone flicked is remembered as their choice', () => {
+  const cleaned = applist.cleanEntries([
+    { id: 'org.mozilla.firefox', keep: false, keepChosen: true },
+    { id: 'com.brave.Browser', keep: false },
+    { id: 'org.gnome.Loupe', keep: true, keepChosen: 'yes' },
+  ]);
+  assert.deepStrictEqual(cleaned.map((a) => [a.keep, a.keepChosen]), [[false, true], [false, false], [true, false]]);
+});
+
 test('a list saved under the old Flatmorphic name is still found', () => {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'flat-oldname-'));
   try {

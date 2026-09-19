@@ -342,10 +342,16 @@ function noSettingsHere(id) {
   return Boolean(app) && !app.hasSettings;
 }
 
-// Keep settings as it actually works out: an app with nothing to keep is
-// Fresh whatever its switch last said.
+// Keep settings as it actually works out. An app with nothing to keep is
+// Fresh whatever its switch last said. An app with settings on this machine
+// keeps them unless someone has switched that off. An app that is not on
+// this machine keeps whatever it was last set to.
 function keeps(entry) {
-  return Boolean(entry.keep) && !noSettingsHere(entry.id);
+  if (noSettingsHere(entry.id)) return false;
+  if (entry.keepChosen) return Boolean(entry.keep);
+  const app = state.apps.find((a) => a.id === (entry.id || '').trim());
+  if (app && app.hasSettings) return true;
+  return Boolean(entry.keep);
 }
 
 function onMineIds() {
@@ -804,7 +810,7 @@ function renderMine() {
     const keepBox = document.createElement('input');
     keepBox.type = 'checkbox';
     keepBox.setAttribute('role', 'switch');
-    keepBox.checked = Boolean(entry.keep);
+    keepBox.checked = keeps(entry);
     keepBox.setAttribute('aria-label', `Keep the settings of ${entry.name || entry.id || 'this app'}`);
     const keepTrack = document.createElement('span');
     keepTrack.className = 'track';
@@ -813,6 +819,7 @@ function renderMine() {
     // A switch applies immediately; nothing waits for a Save button.
     keepBox.addEventListener('change', () => {
       entry.keep = keepBox.checked;
+      entry.keepChosen = true;
       updateMineTally();
       saveMineNow(true);
     });
@@ -944,7 +951,7 @@ function saveMineSoon() {
 async function saveMineNow(quiet) {
   clearTimeout(saveTimer);
   const result = await window.flat.listWrite({
-    apps: state.mine.map(({ id, name, remote, keep }) => ({ id, name, remote, keep: Boolean(keep) })),
+    apps: state.mine.map(({ id, name, remote, keep, keepChosen }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen) })),
     never: [...state.mineNever],
   });
   if (result && result.ok) {
@@ -1107,7 +1114,7 @@ arming(els.mineForget, 'Forget removals', async () => {
 
 els.mineExport.addEventListener('click', async () => {
   const result = await window.flat.listExport({
-    apps: state.mine.map(({ id, name, remote, keep }) => ({ id, name, remote, keep: Boolean(keep) })),
+    apps: state.mine.map(({ id, name, remote, keep, keepChosen }) => ({ id, name, remote, keep: Boolean(keep), keepChosen: Boolean(keepChosen) })),
     never: [...state.mineNever],
   });
   if (result.canceled) return;

@@ -63,11 +63,14 @@ function cleanEntries(raw) {
       id,
       name: String(item.name || id).trim().slice(0, 120) || id,
       remote: isValidRemote(remote) ? remote : 'flathub',
-      // Fresh unless it says otherwise. "Keep settings" means: on a new
-      // machine, bring this app's settings back from a backup after it is
-      // installed. Only a real `true` counts, so a hand-edited "yes" does not
-      // quietly overwrite anything.
+      // "Keep settings" means: back this app's settings up, and bring them
+      // back on the new machine. Only a real `true` counts, so a hand-edited
+      // "yes" does not quietly overwrite anything.
       keep: item.keep === true,
+      // Whether that was a person's choice. Until it is, an app with settings
+      // on this machine keeps them by default; once someone has switched it,
+      // their switch stands.
+      keepChosen: item.keepChosen === true,
     });
   }
   return out;

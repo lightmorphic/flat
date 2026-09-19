@@ -17,9 +17,10 @@ settings and data each one keeps. Tick the ones you want — **All** ticks every
 one — and press **Add to My apps**. An app already on My apps carries a small
 tick.
 
-**My apps** is your list. Switch **Keep settings** on for the apps whose
-settings you want on the next machine; an app that has saved nothing says
-**No settings** instead. Everything starts ticked, and the number beside
+**My apps** is your list. **Keep settings** starts switched on for every app
+that has settings on this machine; switch it off for anything you would
+rather have fresh on the next one, and that choice is remembered. An app that
+has saved nothing says **No settings** instead. Everything starts ticked, and the number beside
 **All** says how many. Untick anything you want left out and press
 **Back up…**: the file carries the ticked apps, and the settings of the ones
 switched on. It will not start while any of those is open — Flat names them,
