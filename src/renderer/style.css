@@ -564,6 +564,8 @@ input[type="checkbox"] {
    column header says what it does, and so does its accessible name. */
 .keepcell { flex: none; width: 6.5rem; display: flex; justify-content: center; }
 .keepcell .switch { min-height: 2rem; }
+/* Said, not switched: an app with nothing saved has nothing to keep. */
+.no-settings { font-size: 0.75rem; color: var(--muted-fg); white-space: nowrap; }
 .keepcell .switch .track { width: 2.25rem; height: 1.25rem; }
 .keepcell .switch .track::after { width: 0.875rem; height: 0.875rem; }
 .keepcell .switch input:checked + .track::after { transform: translateX(1rem); }

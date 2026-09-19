@@ -181,7 +181,10 @@ ipcMain.handle('scan-apps', async (event, { includeCache }) => {
   const listed = await fp.listApps();
   if (!listed.ok) return { ok: false, error: listed.error };
 
-  const withData = listed.apps.map((a) => ({ ...a, hasData: fp.hasData(a.id) }));
+  const withData = listed.apps.map((a) => {
+    const hasData = fp.hasData(a.id);
+    return { ...a, hasData, hasSettings: hasData && fp.hasSettings(a.id) };
+  });
   const ids = withData.filter((a) => a.hasData).map((a) => a.id);
 
   const sizes = await fp.dataSizes(ids, { includeCache }, (done, total) => {

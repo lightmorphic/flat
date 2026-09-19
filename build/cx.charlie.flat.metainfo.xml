@@ -57,6 +57,13 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.5.2" date="2026-09-19">
+      <description>
+        <p>An app on this machine that has saved nothing says "No settings" in
+        place of a Keep settings switch, so there is nothing to switch on by
+        mistake.</p>
+      </description>
+    </release>
     <release version="1.5.1" date="2026-09-19">
       <description>
         <p>Updates now come from Flat's GitHub releases. The version number

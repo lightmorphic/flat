@@ -23,6 +23,11 @@ many at once by ticking rows — the tick at the top ticks them all — and
 pressing **Keep settings** or **Fresh** above the list. A small tick beside a
 name means it is installed on this machine.
 
+An app installed on this machine that has saved nothing outside its cache
+says **No settings** in place of a switch: there is nothing to keep, so there
+is nothing to switch on. For an app on the list that is not on this machine,
+Flat cannot tell, so it keeps its switch.
+
 ## Moving to a new machine
 
 On the machine you are leaving:

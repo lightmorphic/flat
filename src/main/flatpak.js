@@ -218,6 +218,41 @@ function hasData(id) {
   }
 }
 
+// Whether an app has saved anything worth keeping: at least one real file
+// in its folder outside `cache`. A folder alone is not settings — Flatpak
+// makes an empty one for any app that has merely been launched, and an app
+// that has only cached things has nothing a new machine would miss.
+// Stops at the first file found, so a large profile costs no more than a
+// small one.
+function hasSettings(id) {
+  const root = dataDir(id);
+  const stack = [];
+  try {
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+      if (entry.name === 'cache') continue;
+      stack.push({ dir: root, entry });
+    }
+  } catch {
+    return false;
+  }
+  let looked = 0;
+  while (stack.length) {
+    const { dir, entry } = stack.pop();
+    const full = path.join(dir, entry.name);
+    if (entry.isFile()) return true;
+    if (entry.isDirectory() && !entry.isSymbolicLink()) {
+      looked += 1;
+      if (looked > 5000) return true; // that many folders is not an empty profile
+      try {
+        for (const child of fs.readdirSync(full, { withFileTypes: true })) {
+          stack.push({ dir: full, entry: child });
+        }
+      } catch { /* unreadable folder: say nothing about it */ }
+    }
+  }
+  return false;
+}
+
 // `du -sb` counts apparent size in bytes, which is what the archive will
 // roughly hold. Failing quietly to 0 matters: a permission error on one
 // stray directory must not lose the whole listing.
@@ -488,6 +523,7 @@ module.exports = {
   listRemotes,
   dataDir,
   hasData,
+  hasSettings,
   dataSize,
   dataSizes,
   readOverrideFile,

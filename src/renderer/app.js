@@ -330,6 +330,20 @@ function applyFilter(listEl, query) {
 // All apps: everything installed on this machine
 // ---------------------------------------------------------------------------
 
+// An app installed on this machine that has saved nothing outside its
+// cache. Only knowable for apps that are here: for an app on the list but
+// not on this machine, nobody can say, so it keeps its switch.
+function noSettingsHere(id) {
+  const app = state.apps.find((a) => a.id === (id || '').trim());
+  return Boolean(app) && !app.hasSettings;
+}
+
+// Keep settings as it actually works out: an app with nothing to keep is
+// Fresh whatever its switch last said.
+function keeps(entry) {
+  return Boolean(entry.keep) && !noSettingsHere(entry.id);
+}
+
 function onMineIds() {
   return new Set(state.mine.map((e) => (e.id || '').trim()).filter(Boolean));
 }
@@ -342,9 +356,9 @@ function renderAllList() {
       id: app.id,
       name: app.name,
       icon: app.icon,
-      sizeText: app.hasData ? formatBytes(app.dataBytes) : '—',
+      sizeText: app.hasSettings ? formatBytes(app.dataBytes) : 'No settings',
       tick: onMine.has(app.id) ? 'On My apps' : null,
-      title: app.hasData ? 'Size of the settings and data it keeps' : 'Keeps nothing of its own yet',
+      title: app.hasSettings ? 'Size of the settings and data it keeps' : 'Has saved nothing yet, so it would only ever install fresh',
       checked: state.allTicked.has(app.id),
       onToggle: (on) => {
         if (on) state.allTicked.add(app.id);
@@ -398,6 +412,8 @@ async function scanApps() {
   state.allTicked = new Set([...state.allTicked].filter((id) => result.apps.some((a) => a.id === id)));
   renderAllList();
   updateAllTally();
+  if (state.mine.length) renderMine();
+  updateMineTally();
 }
 
 window.flat.onScanProgress(({ done, total }) => {
@@ -446,8 +462,8 @@ els.allToMine.addEventListener('click', async () => {
 // The Keep settings apps that can actually be backed up here: on this
 // machine, and holding something to back up.
 function keepAppsHere() {
-  const keep = new Set(uniqueWanted().filter((e) => e.keep).map((e) => e.id));
-  return state.apps.filter((a) => keep.has(a.id) && a.hasData);
+  const keep = new Set(uniqueWanted().filter(keeps).map((e) => e.id));
+  return state.apps.filter((a) => keep.has(a.id) && a.hasSettings);
 }
 
 function openKeepApps() {
@@ -514,7 +530,7 @@ arming(els.closeRunning, 'Close them for me', async () => {
 });
 
 els.mineBackup.addEventListener('click', async () => {
-  const keeping = uniqueWanted().filter((e) => e.keep);
+  const keeping = uniqueWanted().filter(keeps);
   if (!keeping.length) {
     say(els.mineHint, 'Nothing is marked Keep settings, so there is nothing to back up. Fresh apps need no backup.');
     return;
@@ -766,6 +782,16 @@ function renderMine() {
 
     const keepCell = document.createElement('div');
     keepCell.className = 'keepcell';
+    // Nothing saved here means nothing to keep, so there is no switch to
+    // flick on in the belief that it was forgotten — just the plain fact.
+    const empty = noSettingsHere(entry.id);
+    if (empty) {
+      const none = document.createElement('span');
+      none.className = 'no-settings';
+      none.textContent = 'No settings';
+      none.title = 'This app has saved nothing on this machine, so it installs fresh';
+      keepCell.appendChild(none);
+    }
     const keepLabel = document.createElement('label');
     keepLabel.className = 'switch';
     const keepBox = document.createElement('input');
@@ -776,7 +802,7 @@ function renderMine() {
     const keepTrack = document.createElement('span');
     keepTrack.className = 'track';
     keepLabel.append(keepBox, keepTrack);
-    keepCell.appendChild(keepLabel);
+    if (!empty) keepCell.appendChild(keepLabel);
     // A switch applies immediately; nothing waits for a Save button.
     keepBox.addEventListener('change', () => {
       entry.keep = keepBox.checked;
@@ -890,14 +916,19 @@ els.mineAll.addEventListener('change', () => {
 });
 
 function markTicked(keep) {
-  for (const entry of state.mineTicked) entry.keep = keep;
-  const count = state.mineTicked.size;
+  let passed = 0;
+  let count = 0;
+  for (const entry of state.mineTicked) {
+    if (keep && noSettingsHere(entry.id)) { passed += 1; continue; }
+    entry.keep = keep;
+    count += 1;
+  }
   state.mineTicked = new Set();
   renderMine();
   showSettingsBackup();
   saveMineNow(true);
   say(els.mineHint, keep
-    ? `${plural(count, 'app', 'apps')} will keep their settings.`
+    ? `${plural(count, 'app', 'apps')} will keep their settings.${passed ? ` ${passed} with no settings stay fresh.` : ''}`
     : `${plural(count, 'app', 'apps')} will install fresh.`);
 }
 
@@ -926,7 +957,7 @@ function updateMineTally() {
   const missing = valid.filter((e) => !e.installed);
   const broken = state.mine.length - valid.length;
 
-  const keeping = valid.filter((e) => e.keep).length;
+  const keeping = valid.filter(keeps).length;
   els.mineTally.textContent = state.mine.length
     ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings · ${missing.length} not here yet`
     : 'Nothing on the list';
@@ -935,7 +966,7 @@ function updateMineTally() {
   if (broken) {
     setHint(els.mineHint, `${plural(broken, 'row is', 'rows are')} a repeat or not a valid app ID, and will be skipped.`);
   } else if (missing.length) {
-    const keepingMissing = missing.filter((e) => e.keep).length;
+    const keepingMissing = missing.filter(keeps).length;
     setHint(els.mineHint, keepingMissing && !state.settingsBackup
       ? `${keepingMissing} of these keep settings, but no backup is chosen, so they would install fresh.`
       : 'Anything already on this machine is left alone, settings and all.');
@@ -1223,7 +1254,7 @@ function showSettingsBackup() {
     updateMineTally();
     return;
   }
-  const keepers = state.mine.filter((e) => e.keep);
+  const keepers = state.mine.filter(keeps);
   const covered = keepers.filter((e) => b.ids.includes(e.id)).length;
   const strong = document.createElement('strong');
   strong.textContent = b.name;
