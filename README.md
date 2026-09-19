@@ -20,7 +20,10 @@ tick.
 **My apps** is your list. **Keep settings** starts switched on for every app
 that has settings on this machine; switch it off for anything you would
 rather have fresh on the next one, and that choice is remembered. An app that
-has saved nothing says **No settings** instead. Everything starts ticked, and the number beside
+has saved nothing says **No settings** instead. The **Size** column says how much each
+app's settings take, anything over 250 MB in amber, and the total at the
+bottom says roughly how big the backup comes out, so a heavy one can be left
+out on purpose. Everything starts ticked, and the number beside
 **All** says how many. Untick anything you want left out and press
 **Back up…**: the file carries the ticked apps, and the settings of the ones
 switched on. It will not start while any of those is open — Flat names them,

@@ -534,6 +534,16 @@ input[type="checkbox"] {
 .colhead-id { flex: 1 1 60%; padding-left: 0.5rem; }
 .colhead-remote { flex: none; width: 7rem; padding-left: 0.5rem; }
 .colhead-keep { flex: none; width: 6.5rem; text-align: center; }
+.colhead-size { flex: none; width: 5.5rem; text-align: right; padding-right: 0.5rem; }
+/* How much an app's settings take, so a heavy one can be left out on
+   purpose. Right-aligned so the numbers line up. */
+.cell--size {
+  flex: none; width: 5.5rem; text-align: right;
+  font-size: 0.8125rem; color: var(--muted-fg);
+  font-variant-numeric: tabular-nums;
+  padding-right: 0.5rem;
+}
+.cell--size.is-heavy { color: var(--warning); }
 .colhead-tail { flex: none; width: 1.75rem; }
 .colhead-here { flex: none; width: 1rem; }
 

@@ -376,6 +376,7 @@ async function describeBackup(file) {
   const read = await ar.readManifest(file);
   if (!read.ok) return { ok: false, error: read.error };
   const installed = new Set((await fp.listApps()).apps.map((a) => a.id));
+  const sizes = new Map((read.manifest.apps || []).map((a) => [a.id, Number(a.data_bytes) || 0]));
   return {
     ok: true,
     file,
@@ -385,7 +386,11 @@ async function describeBackup(file) {
     ids: (read.manifest.apps || []).map((a) => a.id),
     // Everything the backup would put on this machine, in the order it was
     // saved, and whether each one is here already.
-    entries: read.manifest.list.map((e) => ({ ...e, installed: installed.has(e.id) })),
+    entries: read.manifest.list.map((e) => ({
+      ...e,
+      installed: installed.has(e.id),
+      bytes: (sizes.get(e.id) || 0),
+    })),
   };
 }
 

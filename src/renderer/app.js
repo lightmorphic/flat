@@ -355,6 +355,27 @@ function keeps(entry) {
   return Boolean(entry.keep);
 }
 
+// Settings bigger than this are shown in amber: not wrong, just worth a
+// second look before carrying them to another machine.
+const HEAVY_BYTES = 250 * 1024 * 1024;
+
+function sizeCell(bytes, known) {
+  const cell = document.createElement('span');
+  cell.className = 'cell--size';
+  if (!known) {
+    cell.textContent = '—';
+    cell.title = 'Not on this machine, so there is nothing here to measure';
+    return cell;
+  }
+  cell.textContent = bytes ? formatBytes(bytes) : '—';
+  cell.title = 'Size of its settings and data, not counting its cache';
+  if (bytes >= HEAVY_BYTES) {
+    cell.classList.add('is-heavy');
+    cell.title += '. Large enough to think about whether it needs to come along';
+  }
+  return cell;
+}
+
 function onMineIds() {
   return new Set(state.mine.map((e) => (e.id || '').trim()).filter(Boolean));
 }
@@ -888,7 +909,10 @@ function renderMine() {
       saveMineNow();
     });
 
-    li.append(tickWrap, tag, name, id, remote, keepCell, drop);
+    const here = state.apps.find((a) => a.id === (entry.id || '').trim());
+    const size = sizeCell(here && here.hasSettings ? here.dataBytes : 0, Boolean(here));
+
+    li.append(tickWrap, tag, name, id, remote, size, keepCell, drop);
     els.mineList.appendChild(li);
   }
 
@@ -924,8 +948,12 @@ function updateMineTally() {
   const ticked = valid.filter((e) => state.mineTicked.has(e));
   const keeping = ticked.filter(keeps).length;
 
+  const bytes = ticked.filter(keeps).reduce((sum, e) => {
+    const app = state.apps.find((a) => a.id === e.id);
+    return sum + (app && app.hasSettings ? app.dataBytes : 0);
+  }, 0);
   els.mineTally.textContent = state.mine.length
-    ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings`
+    ? `${plural(state.mine.length, 'app', 'apps')} on the list · ${keeping} keep settings${bytes ? ` · about ${formatBytes(bytes)} of settings` : ''}`
     : 'Nothing on the list';
 
   // What the button is about to do, on the page rather than behind the i.
@@ -1213,7 +1241,9 @@ function renderRestore() {
       keepCell.appendChild(none);
     }
 
-    li.append(tickWrap, here, name, id, keepCell);
+    const size = sizeCell(entry.keep ? entry.bytes : 0, true);
+
+    li.append(tickWrap, here, name, id, size, keepCell);
     els.restoreList.appendChild(li);
   }
   updateRestoreTally();
@@ -1233,7 +1263,9 @@ function updateRestoreTally() {
     els.restoreTally.textContent = 'No backup open';
     setHint(els.restoreHint, '');
   } else {
-    els.restoreTally.textContent = `${plural(ticked.length, 'app', 'apps')} ticked · ${withSettings} with settings`;
+    const bytes = ticked.filter((e) => e.keep && state.restoreKeep.get(e.id) !== false)
+      .reduce((sum, e) => sum + (e.bytes || 0), 0);
+    els.restoreTally.textContent = `${plural(ticked.length, 'app', 'apps')} ticked · ${withSettings} with settings${bytes ? ` · about ${formatBytes(bytes)}` : ''}`;
     setHint(els.restoreHint, already
       ? `${already} ${already === 1 ? 'is' : 'are'} already on this machine and will be left alone, settings and all.`
       : 'Untick anything you do not want here.');

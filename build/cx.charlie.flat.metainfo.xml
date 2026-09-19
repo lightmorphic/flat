@@ -57,6 +57,13 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.6.3" date="2026-09-19">
+      <description>
+        <p>My apps and Restore show how much each app's settings take, with
+        anything over 250 MB in amber, and the total says roughly how big the
+        backup comes out.</p>
+      </description>
+    </release>
     <release version="1.6.2" date="2026-09-19">
       <description>
         <p>The Restore tab says, before you press Restore, that apps install at
