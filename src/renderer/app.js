@@ -34,7 +34,6 @@ const els = {
   tabMine: $('tab-mine'),
   viewMine: $('view-mine'),
   eyeMineBody: $('eye-mine-body'),
-  minePortableName: $('mine-portable-name'),
   flathubWarning: $('flathub-warning'),
   addFlathub: $('add-flathub'),
   mineSearch: $('mine-search'),
@@ -66,6 +65,7 @@ const els = {
   mineFullHelp: $('mine-full-help'),
   helpOpen: $('help-open'),
   helpClose: $('help-close'),
+  helpNext: $('help-next'),
   viewHelp: $('view-help'),
   helpScroll: $('help-scroll'),
 
@@ -81,7 +81,6 @@ const els = {
   jobReveal: $('job-reveal'),
   jobDone: $('job-done'),
 
-  updateWidget: $('update-widget'),
   updateWidgetVersion: $('update-widget-version'),
   updateDot: $('update-dot'),
   updateDotRingFill: $('update-dot-ring-fill'),
@@ -187,17 +186,85 @@ function arming(button, label, act) {
   return { rest };
 }
 
-// Tooltips that name the thing and go away on their own. `title` sits there
-// as long as the pointer does, which is the one thing the house rule says
-// not to do, so it is removed on the way out of the two seconds.
+// ---------------------------------------------------------------------------
+// Tooltips
+// ---------------------------------------------------------------------------
+
+// Every `title` in the window becomes the same light bubble, rather than the
+// system's own, which looks different on every desktop and sits there for as
+// long as the pointer does. The title is moved to data-tip on first hover so
+// the system one never appears; anything that sets a title later is picked up
+// the next time round.
+const TIP_DELAY_MS = 400;
+const TIP_SHOWN_MS = 1800;
+const tip = document.getElementById('tip');
+let tipTarget = null;
+let tipShowTimer = null;
+let tipHideTimer = null;
+
+function tipTextOf(el) {
+  if (typeof el.tipText === 'function') return el.tipText();
+  return el.dataset.tip || '';
+}
+
+function hideTip() {
+  clearTimeout(tipShowTimer);
+  clearTimeout(tipHideTimer);
+  tip.hidden = true;
+  tipTarget = null;
+}
+
+function placeTip(el) {
+  const text = tipTextOf(el);
+  if (!text) return;
+  tip.textContent = text;
+  tip.hidden = false;
+  const box = el.getBoundingClientRect();
+  const size = tip.getBoundingClientRect();
+  const gap = 8;
+  // Above if it fits, otherwise below: it never runs off the top.
+  const above = box.top - size.height - gap >= 4;
+  const top = above ? box.top - size.height - gap : box.bottom + gap;
+  const centre = box.left + box.width / 2;
+  const left = Math.max(4, Math.min(window.innerWidth - size.width - 4, centre - size.width / 2));
+  tip.style.top = `${Math.round(top)}px`;
+  tip.style.left = `${Math.round(left)}px`;
+  // The arrow still points at the thing, even when the bubble has had to
+  // shift sideways to stay on screen.
+  tip.style.setProperty('--arrow-x', `${Math.round(Math.max(10, Math.min(size.width - 10, centre - left)))}px`);
+  tip.dataset.side = above ? 'above' : 'below';
+  tipHideTimer = setTimeout(hideTip, TIP_SHOWN_MS);
+}
+
+document.addEventListener('mouseover', (event) => {
+  const el = event.target.closest('[title], [data-tip], .has-tip');
+  if (!el || el === tipTarget) return;
+  if (el.hasAttribute('title')) {
+    el.dataset.tip = el.getAttribute('title');
+    el.removeAttribute('title');
+  }
+  hideTip();
+  tipTarget = el;
+  tipShowTimer = setTimeout(() => { if (tipTarget === el) placeTip(el); }, TIP_DELAY_MS);
+});
+
+document.addEventListener('mouseout', (event) => {
+  if (tipTarget && !tipTarget.contains(event.relatedTarget)) hideTip();
+});
+document.addEventListener('mousedown', hideTip);
+document.addEventListener('scroll', hideTip, true);
+window.addEventListener('blur', hideTip);
+
+// For a tooltip whose words change with the state of the thing, like the
+// update dot's: read at the moment it shows.
 function brief(el, text) {
-  const read = () => (typeof text === 'function' ? text() : text);
-  if (typeof text !== 'function') el.setAttribute('aria-label', text);
-  el.addEventListener('mouseenter', () => {
-    el.title = read();
-    setTimeout(() => { el.title = ''; }, 1800);
-  });
-  el.addEventListener('mouseleave', () => { el.title = ''; });
+  if (typeof text === 'function') {
+    el.tipText = text;
+    el.classList.add('has-tip');
+  } else {
+    el.dataset.tip = text;
+    el.setAttribute('aria-label', text);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -255,19 +322,26 @@ for (const [key, pair] of Object.entries(TABS)) {
   });
 }
 
-// Help opens at the top, or at the section a "Full" heading or similar
-// points to. Closing it goes back to whichever tab it was opened from.
+// Help shows one topic at a time. It opens on the first, or on the one a
+// "Full" heading or similar points to; closing it goes back to whichever tab
+// it was opened from.
+const HELP_SECTIONS = [...document.querySelectorAll('.help-section')].map((el) => el.id);
+let helpAt = HELP_SECTIONS[0];
+
 function showHelp(sectionId) {
+  helpAt = HELP_SECTIONS.includes(sectionId) ? sectionId : HELP_SECTIONS[0];
+  for (const id of HELP_SECTIONS) document.getElementById(id).hidden = id !== helpAt;
+  for (const link of document.querySelectorAll('.help-jump a')) {
+    link.setAttribute('aria-current', String(link.getAttribute('href') === `#${helpAt}`));
+  }
+  const next = HELP_SECTIONS[HELP_SECTIONS.indexOf(helpAt) + 1];
+  els.helpNext.hidden = !next;
+  if (next) {
+    const label = document.querySelector(`.help-jump a[href="#${next}"]`);
+    els.helpNext.textContent = `Next: ${label ? label.textContent : ''}`;
+  }
+  els.helpScroll.scrollTop = 0;
   showView('help');
-  // After the page has been laid out, or the jump lands short of the section.
-  requestAnimationFrame(() => {
-    const target = sectionId && document.getElementById(sectionId);
-    if (target) {
-      els.helpScroll.scrollTop = target.offsetTop;
-    } else {
-      els.helpScroll.scrollTop = 0;
-    }
-  });
 }
 
 els.helpOpen.addEventListener('click', () => {
@@ -275,6 +349,12 @@ els.helpOpen.addEventListener('click', () => {
   else showHelp();
 });
 els.helpClose.addEventListener('click', () => showView(state.mode));
+els.helpNext.addEventListener('click', () => {
+  showHelp(HELP_SECTIONS[HELP_SECTIONS.indexOf(helpAt) + 1]);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !els.viewHelp.hidden) showView(state.mode);
+});
 els.mineFullHelp.addEventListener('click', () => showHelp('help-full'));
 // The contents links jump within the page rather than navigating anywhere.
 for (const link of document.querySelectorAll('.help-jump a')) {
@@ -287,6 +367,10 @@ for (const link of document.querySelectorAll('.help-jump a')) {
 // The tray menu names a destination. A job on screen is not interrupted for
 // it: it finishes and lands the user back where they asked to be.
 window.flat.onGoToTab((tab) => {
+  if (tab === 'help') {
+    if (els.viewJob.hidden) showHelp();
+    return;
+  }
   if (!TABS[tab]) return;
   state.mode = tab;
   if (els.viewJob.hidden) showView(tab);

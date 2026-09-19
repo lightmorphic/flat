@@ -39,7 +39,8 @@ Brave profile that took the backup from 950 MB to 550 MB. Ticked, the whole
 folder goes, cache and all. The Size column follows the tick. The tick only
 appears where it would change anything, and its heading opens the help.
 
-**Help**, beside the version number, explains all of this with pictures.
+**Help**, beside the version number (or F1), explains all of this with
+pictures, one topic at a time. Ctrl+1, 2 and 3 switch tabs, and Ctrl+Q quits.
 
 **Restore** opens a backup — Flat finds one on its own beside the AppImage, in
 the folder it was run from, or in Downloads — and shows the same list. The

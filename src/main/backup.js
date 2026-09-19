@@ -154,4 +154,4 @@ async function runBackup({ apps, list = [], outFile }, onProgress) {
   }
 }
 
-module.exports = { runBackup, packName, sourceDistro };
+module.exports = { runBackup, packName };

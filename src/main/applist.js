@@ -162,7 +162,6 @@ module.exports = {
   isValidId,
   isValidRemote,
   cleanEntries,
-  cleanIds,
   load,
   save,
   writeTo,

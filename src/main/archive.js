@@ -241,7 +241,6 @@ module.exports = {
   FORMAT_VERSION,
   cleanManifest,
   detectCompressor,
-  attrFlags,
   sha256File,
   packAppData,
   unpackAppData,

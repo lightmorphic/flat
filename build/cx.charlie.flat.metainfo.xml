@@ -39,7 +39,23 @@
     </p>
   </description>
 
+  <icon type="stock">flat</icon>
   <launchable type="desktop-id">flat.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>My apps: your list, with the apps whose settings you keep</caption>
+      <image type="source" width="1600" height="971">https://flat.lightmorphic.com/images/screenshot-my-apps.jpg</image>
+    </screenshot>
+    <screenshot>
+      <caption>All apps: everything installed on this machine</caption>
+      <image type="source" width="1600" height="971">https://flat.lightmorphic.com/images/screenshot-all-apps.jpg</image>
+    </screenshot>
+    <screenshot>
+      <caption>Restoring onto a new machine, every app accounted for</caption>
+      <image type="source" width="1600" height="971">https://flat.lightmorphic.com/images/screenshot-install-run.jpg</image>
+    </screenshot>
+  </screenshots>
   <categories>
     <category>System</category>
     <category>Utility</category>
@@ -57,6 +73,15 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.8.0" date="2026-09-19">
+      <description>
+        <p>Ready for release: tooltips are the house light speech bubble, the
+        menu has the usual shortcuts (F1 for help, Ctrl+1 to 3 for the tabs,
+        Ctrl+Q to quit) and no longer offers Reload or the developer tools,
+        Help shows one topic at a time with its picture beside it, the software
+        centre listing has screenshots, and unused code is gone.</p>
+      </description>
+    </release>
     <release version="1.7.1" date="2026-09-19">
       <description>
         <p>Removing an app from My apps now clears its tick on All apps straight

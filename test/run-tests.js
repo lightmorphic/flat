@@ -12,7 +12,6 @@ const path = require('path');
 
 const fp = require('../src/main/flatpak');
 const ar = require('../src/main/archive');
-const { recommend } = require('../src/main/recommend');
 const applist = require('../src/main/applist');
 
 const tests = [];
@@ -54,26 +53,6 @@ test('a permission dump with nothing in it produces no flags', () => {
 });
 
 // ---------------------------------------------------------------------------
-
-test('browsers and vaults are pre-ticked whatever their size', () => {
-  for (const id of ['org.mozilla.firefox', 'com.bitwarden.desktop', 'md.obsidian.Obsidian']) {
-    const advice = recommend({ id, hasData: true, dataBytes: 1024 });
-    assert.strictEqual(advice.recommended, true, `${id} should be recommended`);
-  }
-});
-
-test('converters and viewers are left unticked even when large', () => {
-  for (const id of ['fr.handbrake.ghb', 'org.gnome.Calculator', 'com.github.tchx84.Flatseal']) {
-    const advice = recommend({ id, hasData: true, dataBytes: 900 * 1024 * 1024 });
-    assert.strictEqual(advice.recommended, false, `${id} should not be recommended`);
-  }
-});
-
-test('an unknown app is judged on size, with no data meaning no', () => {
-  assert.strictEqual(recommend({ id: 'com.example.Thing', hasData: true, dataBytes: 1024 }).recommended, false);
-  assert.strictEqual(recommend({ id: 'com.example.Thing', hasData: true, dataBytes: 40 * 1024 * 1024 }).recommended, true);
-  assert.strictEqual(recommend({ id: 'com.example.Thing', hasData: false, dataBytes: 0 }).recommended, false);
-});
 
 // ---------------------------------------------------------------------------
 

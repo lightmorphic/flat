@@ -258,11 +258,11 @@
         <ul class="help-list">
           <li><b>Size</b> — how much of its settings the backup will take. Anything over 250&nbsp;MB shows in amber, as a nudge to ask whether you need it.</li>
           <li><b>Keep settings</b> — on for every app that has settings here. Switch it off and the app comes back brand new. <em>No settings</em> means the app has saved nothing, so there is nothing to keep.</li>
-          <li><b>Full</b> — see below.</li>
+          <li><b>Full</b> — whether to take the whole folder; the next page explains.</li>
           <li><b>A small tick by the name</b> — the app is installed on this computer.</li>
         </ul>
-        <p>Everything starts ticked. Untick anything you want left out, then press <em>Back up…</em> and choose where to save the file. If any app whose settings are going is open, Flat says which and waits: a browser copied while it is running comes out broken. <em>Check again</em> looks once more after you close it; <em>Close them for me</em> closes it for you.</p>
-        <p>To add an app you do not have yet, type its name — or paste its ID — in the search box and press <em>Add</em>.</p>
+        <p>Everything starts ticked. Untick what you want left out, press <em>Back up…</em> and choose where to save. If an app whose settings are going is open, Flat names it and waits — a browser copied while running comes out broken. <em>Check again</em> looks once more; <em>Close them for me</em> closes it.</p>
+        <p>To add an app you do not have yet, search for its name or paste its ID.</p>
         <figure class="help-shot"><img src="help/my-apps.jpg" alt="The My apps tab: the list of apps with Size, Keep settings and Full columns and the Back up button." width="1400" height="850"></figure>
       </section>
 
@@ -310,6 +310,7 @@
     <div class="footbar">
       <div class="tally"><span class="hint">Flat is free and open source.</span></div>
       <div class="foot-actions">
+        <button type="button" class="btn btn--quiet" id="help-next">Next</button>
         <button type="button" class="btn btn--primary" id="help-close">Back to Flat</button>
       </div>
     </div>
@@ -344,6 +345,9 @@
   </main>
 
 </div>
+
+<!-- One tooltip for the whole window, drawn by app.js. -->
+<div class="tip" id="tip" role="tooltip" hidden></div>
 
 <script src="app.js"></script>
 </body>

@@ -9,7 +9,6 @@ const os = require('os');
 
 const fp = require('./flatpak');
 const ar = require('./archive');
-const { recommend } = require('./recommend');
 const { runBackup, packName } = require('./backup');
 const { runRestore } = require('./restore');
 const applist = require('./applist');
@@ -133,8 +132,44 @@ function send(channel, payload) {
   }
 }
 
+// The menu a Linux desktop app is expected to have, and no more. Electron's
+// own default carries Reload and the developer tools, and reloading halfway
+// through a backup or restore would lose the job. The bar stays hidden until
+// Alt is pressed, as before.
+function buildAppMenu() {
+  return Menu.buildFromTemplate([
+    {
+      label: 'File',
+      submenu: [{ role: 'quit', label: 'Quit Flat' }],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+        { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { label: 'All apps', accelerator: 'CmdOrCtrl+1', click: () => showWindow('all') },
+        { label: 'My apps', accelerator: 'CmdOrCtrl+2', click: () => showWindow('mine') },
+        { label: 'Restore', accelerator: 'CmdOrCtrl+3', click: () => showWindow('restore') },
+      ],
+    },
+    {
+      label: 'Help',
+      submenu: [
+        { label: 'How to use Flat', accelerator: 'F1', click: () => showWindow('help') },
+        { label: 'flat.lightmorphic.com', click: () => shell.openExternal('https://flat.lightmorphic.com') },
+      ],
+    },
+  ]);
+}
+
 app.whenReady().then(() => {
   carryOverOldSettings();
+  Menu.setApplicationMenu(buildAppMenu());
   createWindow();
   createTray();
   setupUpdates();
@@ -164,7 +199,6 @@ ipcMain.handle('app-info', () => ({
   name: app.getName(),
   version: app.getVersion(),
   hostname: os.hostname(),
-  updatesConfigured: Boolean(UPDATE_FEED),
 }));
 
 ipcMain.handle('flatpak-probe', async () => {
@@ -204,16 +238,12 @@ ipcMain.handle('scan-apps', async () => {
 
   const apps = withData.map((a) => {
     const size = sizes[a.id] || { full: 0, trimmed: 0, trimmable: false };
-    const dataBytes = size.trimmed;
-    const advice = recommend({ ...a, dataBytes });
     return {
       ...a,
-      dataBytes,
+      dataBytes: size.trimmed,
       fullBytes: size.full,
       trimmable: size.trimmable,
       icon: fp.iconDataUrl(a.id),
-      recommended: advice.recommended,
-      reason: advice.reason,
     };
   });
 
@@ -557,7 +587,6 @@ let lastUpdateState = null;
 ipcMain.handle('update-state-get', () => lastUpdateState);
 
 function setupUpdates() {
-  if (!UPDATE_FEED) return;
   // eslint-disable-next-line global-require
   const { autoUpdater } = require('electron-updater');
   autoUpdater.logger = null;
@@ -607,12 +636,4 @@ function setupUpdates() {
     autoUpdater.quitAndInstall();
     return { ok: true };
   });
-}
-
-// With no feed configured the renderer still calls these; answering keeps it
-// from having to know whether updates exist.
-if (!UPDATE_FEED) {
-  ipcMain.handle('update-check', async () => ({ error: true }));
-  ipcMain.handle('update-download', async () => ({ ok: false }));
-  ipcMain.handle('update-install', async () => ({ error: 'Updates are not configured in this build.' }));
 }

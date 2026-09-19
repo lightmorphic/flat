@@ -373,39 +373,6 @@ async function settingsSizes(id, root = dataDir(id)) {
   return { full, trimmed, trimmable: full > trimmed };
 }
 
-// `du -sb` counts apparent size in bytes, which is what the archive will
-// roughly hold. Failing quietly to 0 matters: a permission error on one
-// stray directory must not lose the whole listing.
-async function dataSize(id, { includeCache }) {
-  const dir = dataDir(id);
-  if (!hasData(id)) return 0;
-  const args = ['-sb'];
-  if (!includeCache) args.push('--exclude=cache');
-  args.push(dir);
-  const result = await run('du', args, { timeout: 120000 });
-  if (!result.ok && !result.stdout) return 0;
-  const bytes = parseInt(result.stdout.split(/\s+/)[0], 10);
-  return Number.isFinite(bytes) ? bytes : 0;
-}
-
-// Sizing every app at once fires one `du` per app; a handful at a time keeps
-// a machine with sixty Flatpaks from thrashing the disk.
-async function dataSizes(ids, { includeCache }, onProgress) {
-  const sizes = {};
-  const queue = [...ids];
-  let done = 0;
-  const workers = Array.from({ length: 4 }, async () => {
-    while (queue.length) {
-      const id = queue.shift();
-      sizes[id] = await dataSize(id, { includeCache });
-      done += 1;
-      if (onProgress) onProgress(done, ids.length);
-    }
-  });
-  await Promise.all(workers);
-  return sizes;
-}
-
 // ---------------------------------------------------------------------------
 // Permissions and overrides
 // ---------------------------------------------------------------------------
@@ -599,12 +566,6 @@ async function installLatest({ id, remote }) {
   return { ok: false, error: result.error || 'install failed' };
 }
 
-async function addRemote(name, url) {
-  return run('flatpak', [
-    'remote-add', '--if-not-exists', '--user', name, url,
-  ], { timeout: 60000 });
-}
-
 async function isInstalled(id) {
   const result = await run('flatpak', ['info', id], { timeout: 30000 });
   return result.ok;
@@ -631,10 +592,8 @@ async function installApp({ id, remote, branch, remoteUrl }) {
 }
 
 module.exports = {
-  HOME,
   VAR_APP,
   USER_OVERRIDES,
-  SYSTEM_OVERRIDES,
   run,
   runLong,
   probe,
@@ -647,8 +606,6 @@ module.exports = {
   hasSettings,
   throwawayPaths,
   settingsSizes,
-  dataSize,
-  dataSizes,
   readOverrideFile,
   readGlobalOverride,
   showPermissions,
@@ -656,10 +613,8 @@ module.exports = {
   applyOverrideArgs,
   writeOverrideFile,
   iconDataUrl,
-  addRemote,
   isInstalled,
   installApp,
-  FLATHUB,
   addFlathub,
   ensureUserRemote,
   searchApps,
