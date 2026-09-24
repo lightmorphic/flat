@@ -12,7 +12,7 @@ Made by Lightmorphic (https://lightmorphic.com), a UK studio building fast, priv
 
 - [Lightmorphic Flat](https://flat.lightmorphic.com/): what it does, how it works, its limits, questions, and download
 - [Privacy](https://flat.lightmorphic.com/privacy.html), [Cookies](https://flat.lightmorphic.com/cookies.html), [Terms](https://flat.lightmorphic.com/terms.html), [Accessibility](https://flat.lightmorphic.com/accessibility.html), [Complaints](https://flat.lightmorphic.com/complaints.html): the legal pages. Lightmorphic Ltd, company number 17423646.
-- [Source and releases](https://github.com/lightmorphic/flat): full source code, issue tracker, and every release
+- [Source](https://flat.lightmorphic.com/code), [bug tracker](https://flat.lightmorphic.com/bugs) and [downloads](https://flat.lightmorphic.com/downloads), on Buildmorphic
 
 ## Key facts
 

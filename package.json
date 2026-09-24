@@ -1,7 +1,7 @@
 {
   "name": "flat",
   "productName": "Flat",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Lightmorphic Flat: back up the settings, data and permissions of selected Flatpak apps, keep a standing list of the apps you always want, and put them all on a new machine with one button.",
   "main": "src/main/main.js",
   "license": "GPL-3.0-or-later",
@@ -63,16 +63,14 @@
       "syncDesktopName": true
     },
     "publish": {
-      "provider": "github",
-      "owner": "lightmorphic",
-      "repo": "flat",
-      "releaseType": "release"
+      "provider": "generic",
+      "url": "https://flat.buildmorphic.com/download/latest"
     }
   },
   "desktopName": "flat.desktop",
   "homepage": "https://flat.lightmorphic.com",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/lightmorphic/flat.git"
+    "type": "web",
+    "url": "https://flat.lightmorphic.com/code"
   }
 }

@@ -63,8 +63,8 @@
   </categories>
 
   <url type="homepage">https://flat.lightmorphic.com</url>
-  <url type="bugtracker">https://github.com/lightmorphic/flat/issues</url>
-  <url type="vcs-browser">https://github.com/lightmorphic/flat</url>
+  <url type="bugtracker">https://flat.lightmorphic.com/bugs</url>
+  <url type="vcs-browser">https://flat.lightmorphic.com/code</url>
 
   <provides>
     <binary>flat</binary>
@@ -73,6 +73,13 @@
   <content_rating type="oars-1.1"/>
 
   <releases>
+    <release version="1.8.1" date="2026-09-24">
+      <description>
+        <p>Flat now lives on Buildmorphic. Updates, the source, the bug
+        tracker and the website all come from flat.lightmorphic.com rather
+        than GitHub.</p>
+      </description>
+    </release>
     <release version="1.8.0" date="2026-09-19">
       <description>
         <p>Ready for release: tooltips are the house light speech bubble, the

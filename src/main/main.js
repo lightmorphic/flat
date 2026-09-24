@@ -13,13 +13,12 @@ const { runBackup, packName } = require('./backup');
 const { runRestore } = require('./restore');
 const applist = require('./applist');
 
-// Where the dot looks for a newer build: this repository's GitHub releases,
+// Where the dot looks for a newer build: Flat's downloads on Buildmorphic,
 // which carry the AppImage and the `latest-linux.yml` electron-builder writes
-// beside it to say which version is current.
+// beside it to say which version is current. "latest" is always the newest.
 const UPDATE_FEED = {
-  provider: 'github',
-  owner: 'lightmorphic',
-  repo: 'flat',
+  provider: 'generic',
+  url: 'https://flat.buildmorphic.com/download/latest',
 };
 
 let mainWindow = null;

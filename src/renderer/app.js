@@ -1546,7 +1546,7 @@ const UPDATE_DOT_LABELS = {
   downloading: 'downloading',
   downloaded: 'click to restart',
   installing: 'restarting',
-  error: "can't connect to GitHub — click to try again",
+  error: "can't reach the update server — click to try again",
 };
 
 // The dot is working, not waiting for you, in these.

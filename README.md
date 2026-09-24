@@ -162,9 +162,12 @@ it; the ring traces the download; blue means click to restart into it. Red
 means it could not reach the update server.
 
 Releases are published on
-[GitHub](https://github.com/lightmorphic/flat/releases). Each one carries the
+[Buildmorphic](https://flat.lightmorphic.com/downloads). Each one carries the
 AppImage and the `latest-linux.yml` that electron-builder writes beside it,
-which is what the dot reads to decide whether there is a newer version.
+which is what the dot reads to decide whether there is a newer version. The
+dot asks `https://flat.buildmorphic.com/download/latest`, which always holds
+the newest release. Up to 1.8.0 releases were on GitHub; 1.8.1 went out in
+both places so every copy already installed follows it across.
 
 ## Building
 
